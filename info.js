@@ -13,6 +13,7 @@ const LONG = {
   researchLab: 'Per condurre ricerche serve un laboratorio. Più è evoluto, più tecnologie si possono studiare e più veloci sono le ricerche. In questo gioco il laboratorio del pianeta selezionato determina la durata della ricerca.',
   nanite: 'I naniti sono la forma più avanzata della robotica: robot di dimensioni nanometriche che dimezzano il tempo di costruzione di edifici, navi e difese ad ogni livello. Una struttura costosissima, ma decisiva a lungo termine.',
   terraformer: 'Con il terraformer si rende edificabile terreno altrimenti inutilizzabile, aumentando i campi del pianeta. Consuma molta energia. Ogni livello aggiunge 5 campi. Non si può costruire sulle lune.',
+  spaceDock: 'Nel porto spaziale i relitti delle navi distrutte vengono recuperati e rimessi in servizio. Quando una flotta nemica colpisce il pianeta, ogni livello ripara il 5% delle navi perse (fino al 70%). Non ripara le difese, che hanno già la loro ricostruzione automatica.',
   missileSilo: 'Il silo è la base di lancio e di stoccaggio dei missili. Ogni livello offre spazio per 5 missili interplanetari (o 10 anti-balistici). Serve per attaccare le difese di pianeti rivali a distanza.',
   lunarBase: 'La luna non ha atmosfera: la base lunare rende abitabile la superficie e genera spazio per altre costruzioni. Ogni livello aggiunge 3 campi alla luna. È la prima struttura da costruire su una luna.',
   phalanx: 'Un sensore ad alta risoluzione che analizza gli spettri di emissione dei motori nei dintorni: permette di vedere i movimenti di flotta nei sistemi vicini. Ogni scansione costa deuterio. Il raggio cresce con il livello.',
@@ -45,6 +46,9 @@ const LONG = {
   bomber: 'Il bombardiere è stato sviluppato per distruggere le difese planetarie. Una mira laser lo guida con grande precisione. Ha fuoco rapido contro la maggior parte delle difese.',
   destroyer: 'La corazzata è la più pesante delle navi da guerra. Con la sua potenza di fuoco e lo scafo massiccio è il terrore di laser e incrociatori da battaglia.',
   battlecruiser: 'L’incrociatore da battaglia è specializzato nell’intercettare le flotte nemiche. Con armi laser potenti e grande velocità ha fuoco rapido contro cargo, caccia pesanti, incrociatori e navi da battaglia.',
+  reaper: 'La Mietitrice è un incrociatore pesante da battaglia che unisce potenza di fuoco e recupero: può raccogliere i detriti come una riciclatrice. Ha fuoco rapido contro navi da battaglia, bombardieri e corazzate, ma è lenta.',
+  pathfinder: 'L’Esploratore è una nave veloce con ampia stiva, progettata per le spedizioni nello spazio profondo. Ogni Esploratore in una spedizione aumenta del 2% le risorse trovate (fino a +100%).',
+  crawler: 'Il Crawler è un veicolo minerario da superficie: ogni esemplare aumenta dello 0,02% la produzione di metallo, cristallo e deuterio, fino a +50%. Se ne possono usare al massimo 8 per ogni livello di miniera. Non vola, non va sulle lune ed è debolissimo in combattimento.',
   deathstar: 'La Morte Nera ha un cannone di potenza immensa, capace di annientare intere flotte e lune. È costosissima, lentissima e ha un fuoco rapido contro quasi ogni unità.',
   solarSat: 'I satelliti solari orbitano sul pianeta e trasformano la luce solare in energia, trasmessa a terra via laser. L’energia di ciascuno dipende dalla temperatura del pianeta. Sono fragili e non si possono inviare in missione.',
 
@@ -56,6 +60,7 @@ const LONG = {
   plasma: 'La torretta al plasma è la difesa più potente. Rilascia scariche di plasma ad alta energia con enorme capacità distruttiva.',
   smallDome: 'La cupola scudo piccola avvolge l’intero pianeta in un campo energetico che assorbe enormi quantità di danni. Se ne può costruire solo una per pianeta.',
   largeDome: 'Evoluzione della cupola piccola: assorbe ancora più danni. Se ne può costruire solo una per pianeta.',
+  abm: 'I missili anti-balistici sono lanciati dal silo per intercettare i missili interplanetari nemici: ciascuno ne abbatte uno. Occupano metà posto di un missile interplanetario nel silo (10 posti per livello). Non partecipano alle battaglie.',
   ipm: 'I missili interplanetari distruggono le difese del nemico. Le difese distrutte non si ricostruiscono. Si lanciano da un silo dentro il raggio di portata dato dal Propulsore a impulso.',
 };
 for (const [id, t] of Object.entries(LONG)) if (DEFS[id]) DEFS[id].desc = t;
@@ -69,9 +74,11 @@ const USES = {
   metalMine: 'Metallo per tutte le costruzioni.', crystalMine: 'Cristallo per ricerche, elettronica e navi avanzate.', deutSynth: 'Carburante per le flotte e per i reattori a fusione.',
   solarPlant: 'Energia per miniere e sintetizzatore.', fusionPlant: 'Energia extra al prezzo di deuterio.', robotics: 'Tempi di costruzione edifici ridotti.', shipyard: 'Costruzione di navi e difese; velocità di produzione.',
   researchLab: 'Ricerca di tecnologie; velocità di ricerca.', nanite: 'Tempi di costruzione dimezzati per livello.', terraformer: '+5 campi per livello.', missileSilo: 'Stoccaggio di 5 missili per livello.',
-  lunarBase: '+3 campi per livello sulla luna.', phalanx: 'Scansione dei movimenti di flotta nei sistemi vicini.', jumpGate: 'Salti istantanei di flotta tra lune.',
+  spaceDock: 'Ripara il 5% per livello delle navi perse in difesa.', lunarBase: '+3 campi per livello sulla luna.', phalanx: 'Scansione dei movimenti di flotta nei sistemi vicini.', jumpGate: 'Salti istantanei di flotta tra lune.',
   energyTech: 'Più energia dai reattori a fusione.', plasmaTech: '+1% metallo, +0,66% cristallo, +0,33% deuterio per livello.', combustion: '+10% velocità alle navi a combustione.', impulse: '+20% velocità alle navi a impulso; raggio dei missili.',
   hyperDrive: '+30% velocità alle navi iperspaziali.', espionage: 'Rapporti di spionaggio più dettagliati.', computerTech: '+1 slot flotta.', astro: 'Più colonie e spedizioni.',
+  reaper: 'Raccoglie detriti (capacità 10.000); fuoco rapido contro navi pesanti.', pathfinder: 'Spedizioni: +2% risorse trovate per nave (max +100%).', crawler: '+0,02% produzione miniere (max +50%).',
+  abm: 'Intercetta un missile interplanetario nemico ciascuno.',
   weapons: '+10% attacco.', shield: '+10% scudi.', armour: '+10% struttura.',
 };
 
@@ -87,6 +94,44 @@ function statsLine(id) {
   if (rf.length) h += `<br>Fuoco rapido contro: ${rf.join(', ')}`;
   if (rfBy.length) h += `<br>Subisce fuoco rapido da: ${rfBy.join(', ')}`;
   return `<div class="nums">${h}</div>`;
+}
+const DRIVES = { c: ['Combustione', 'combustion', 0.1], i: ['Impulso', 'impulse', 0.2], h: ['Iperspaziale', 'hyperDrive', 0.3] };
+// Informazioni importanti su una nave o difesa: fuoco rapido, motore, valori con le ricerche attuali.
+function unitFacts(id, pl) {
+  const d = DEFS[id]; if (d.type !== 's' && d.type !== 'd') return '';
+  const n = x => x.toLocaleString('it-IT'), T = G.tech, dn = t => DEFS[t].name;
+  const rf = Object.entries(RF[id] || {}).map(([t, v]) => `${dn(t)} ×${v} <small class="muted">(${Math.round((1 - 1 / v) * 100)}%)</small>`);
+  const rfBy = Object.entries(RF).filter(([a, m]) => m[id] && a !== id).map(([a, m]) => `${dn(a)} ×${m[id]}`);
+  let h = '<div class="facts">';
+  h += `<div><b>Fuoco rapido contro:</b> ${rf.length ? rf.join(', ') : '<span class="muted">nessuno</span>'}</div>`;
+  h += `<div><b>Subisce fuoco rapido da:</b> ${rfBy.length ? rfBy.join(', ') : '<span class="muted">nessuno</span>'}</div>`;
+  const w = 1 + 0.1 * (T.weapons || 0), s = 1 + 0.1 * (T.shield || 0), a = 1 + 0.1 * (T.armour || 0);
+  h += `<div><b>Con le tue ricerche:</b> attacco ${n(Math.round(d.atk * w))} · scudo ${n(Math.round(d.shield * s))} · struttura ${n(Math.round(d.hull * a))}</div>`;
+  if (d.type === 's' && !d.noFly) {
+    const [dname, tech, per] = DRIVES[d.drive];
+    h += `<div><b>Motore:</b> ${dname} (+${Math.round(per * 100)}% per livello, livello ${T[tech] || 0}) · velocità base ${n(d.speed)} → <b>${n(Math.round(shipSpeed(id)))}</b> · consumo ${n(d.fuel)} · capacità ${n(d.cap)}</div>`;
+  }
+  if (d.noFly) h += `<div><b>Nota:</b> non può volare${d.where === 'p' ? ' né stare sulle lune' : ''}.</div>`;
+  const eff = d.atk > 1 ? (d.atk * w) / ((d.cost[0] + d.cost[1] + d.cost[2]) / 1000) : 0;
+  if (eff) h += `<div><b>Efficienza:</b> ${n(Math.round(eff))} attacco ogni 1.000 risorse spese</div>`;
+  const extra = { reaper: 'Può raccogliere i campi di detriti (come una riciclatrice).', pathfinder: 'In spedizione: +2% risorse trovate per ogni Esploratore (max +100%).', recycler: 'Raccoglie i campi di detriti.', ipm: 'Occupa 2 posti nel silo (10 per livello). Distrugge le difese di un pianeta NPC.', abm: 'Occupa 1 posto nel silo (10 per livello). Intercetta un missile interplanetario in arrivo sul pianeta.', crawler: pl ? `Bonus attuale su questo pianeta: +${((crawlerBonus(pl) - 1) * 100).toFixed(2)}% (usabili ${n(crawlerUsed(pl))} su ${n(crawlerMax(pl))}).` : '', colonyShip: 'Si consuma fondando una colonia.', probe: 'Per spiare i pianeti NPC.' }[id];
+  if (extra) h += `<div><b>Speciale:</b> ${extra}</div>`;
+  return h + '</div>';
+}
+// Effetti di una ricerca in base al livello attuale.
+function techFacts(id) {
+  if (DEFS[id].type !== 't') return '';
+  const T = G.tech, lv = T[id] || 0, drv = Object.entries(DRIVES).find(([, v]) => v[1] === id);
+  let h = '';
+  if (drv) h = `<div><b>Livello ${lv}:</b> navi +${Math.round(drv[1][2] * lv * 100)}% di velocità.</div><div><b>Navi interessate:</b> ${IDS.s.filter(i => DEFS[i].drive === drv[0] && !DEFS[i].noFly).map(i => DEFS[i].name).join(', ')}</div>`;
+  else if (id === 'weapons') h = `<div><b>Livello ${lv}:</b> +${lv * 10}% attacco a tutte le tue navi e difese.</div>`;
+  else if (id === 'shield') h = `<div><b>Livello ${lv}:</b> +${lv * 10}% scudi a tutte le tue navi e difese.</div>`;
+  else if (id === 'armour') h = `<div><b>Livello ${lv}:</b> +${lv * 10}% struttura a tutte le tue navi e difese.</div>`;
+  else if (id === 'computerTech') h = `<div><b>Livello ${lv}:</b> ${lv} slot flotta in più.</div>`;
+  else if (id === 'astro') h = `<div><b>Livello ${lv}:</b> più colonie e spedizioni; bonus alle risorse trovate in spedizione.</div>`;
+  else if (id === 'plasmaTech') h = `<div><b>Livello ${lv}:</b> produzione +${lv}% metallo, +${(lv * 0.66).toFixed(2)}% cristallo, +${(lv * 0.33).toFixed(2)}% deuterio.</div>`;
+  else if (id === 'espionage') h = `<div><b>Livello ${lv}:</b> più dettagli nei rapporti delle sonde.</div>`;
+  return h ? `<div class="facts">${h}</div>` : '';
 }
 function infoRow(id, pl) {
   const d = DEFS[id], ok = meets(pl, id), un = (UNLOCKS[id] || []).map(u => DEFS[u].name);

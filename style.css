@@ -108,3 +108,5 @@ table.rep td input[type=number] { width: 90px; }
 .simt { width: 100%; border-collapse: collapse; font-size: 12px; margin-top: 8px; } .simt td, .simt th { padding: 1px 6px; width: auto; text-align: left; border-bottom: 1px solid var(--line2); line-height: 1.3; }
 .simt td:first-child { width: 38%; } .simt input[type=text] { width: 88px; padding: 1px 4px; font-size: 12px; text-align: right; } .simt .simres input { width: 100px; } .simt tr.sub th { background: #121a26; color: var(--hi); font-weight: 600; }
 .simbar { margin: 0 0 6px; } .simbar input { width: 50px; } details summary { cursor: pointer; margin: 8px 0; }
+
+.facts { margin-top: 6px; font-size: 12px; line-height: 1.55; } .facts div { margin: 1px 0; } .facts b { color: var(--hi); }

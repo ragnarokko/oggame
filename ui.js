@@ -89,6 +89,7 @@ function detail(id, pl) {
   const d = DEFS[id], ok = meets(pl, id), isUnit = d.type === 's' || d.type === 'd', n = haveOf(id, pl);
   let h = `<div class="detail">${icon(id, 'l')}<div><h2>${d.name} <small>${isUnit ? (n ? '(' + nf(n) + ')' : '') : '(Livello ' + n + ')'}</small></h2><p class="desc">${d.desc}</p>`;
   if (isUnit) h += `<div class="stats"><span>Attacco <b>${nf(d.atk)}</b></span><span>Scudo <b>${nf(d.shield)}</b></span><span>Struttura <b>${nf(d.hull)}</b></span>${d.cap ? `<span>Capacità <b>${nf(d.cap)}</b></span>` : ''}${d.speed && !d.noFly ? `<span>Velocità <b>${nf(shipSpeed(id))}</b></span><span>Consumo <b>${nf(d.fuel)}</b></span>` : ''}</div>`;
+  h += unitFacts(id, pl) + techFacts(id);
   h += `<div><button class="mini" onclick="openTree('${id}')">Albero tecnologico e applicazioni</button></div>`;
   if (!ok) return h + `<p class="req">Requisiti: ${reqText(pl, id)}</p></div></div>`;
   if (!isUnit) {
@@ -114,7 +115,7 @@ function eventsBox() {
   const ev = [];
   for (const r of incomingRaids()) { const pl = G.planets.find(p => p.id === r.pid); ev.push({ t: r.arr, cls: 'hostile', txt: `Flotta ostile di ${r.owner} [${r.from.g}:${r.from.s}:${r.from.p}] in rotta su ${pl ? pl.name : '?'} (${nf(totalShips(r.ships))} navi)` }); }
   for (const f of G.fleets) { const o = G.planets.find(p => p.id === f.from) || G.planets[0]; ev.push({ t: f.arr, cls: f.state === 'back' ? 'back' : 'own', txt: f.state === 'out' ? `Una tua flotta da ${o.name} [${o.g}:${o.s}:${o.p}] raggiunge [${f.to.g}:${f.to.s}:${f.to.p}] — ${MISSIONS[f.mission]}` : `Una tua flotta rientra su ${o.name} da [${f.to.g}:${f.to.s}:${f.to.p}]` }); }
-  for (const m of G.missiles) ev.push({ t: m.arr, cls: 'own', txt: `${nf(m.n)} missili interplanetari verso [${m.to.g}:${m.to.s}:${m.to.p}]` });
+  for (const m of G.missiles) ev.push({ t: m.arr, cls: 'own', txt: m.hostile ? `Missili ostili di ${m.owner} (${nf(m.n)}) in arrivo su ${(G.planets.find(p => p.id === m.pid) || {}).name}` : `${nf(m.n)} missili interplanetari verso [${m.to.g}:${m.to.s}:${m.to.p}]` });
   ev.sort((a, b) => a.t - b.t);
   rows = ev.map(e => `<div class="ev ${e.cls}"><span class="t">${cd(e.t)}</span><span>${e.txt}</span></div>`).join('');
   return rows ? panel('Eventi', rows, incomingRaids().length ? 'hostile' : '') : '';
@@ -135,8 +136,8 @@ function vOverview() {
 
 function vResources() {
   const pl = cur(), p = calcProd(pl), cap = capacities(pl);
-  let h = queueBox(pl, 'b');
-  const ids = IDS.b.filter(i => DEFS[i].grp === 'res');
+  let h = queueBox(pl, 'bs');
+  const ids = [...IDS.b.filter(i => DEFS[i].grp === 'res'), 'solarSat', 'crawler'];
   h += itemsView(`Risorse — ${pl.name}`, ids, pl);
   if (pl.moon) return h + panel('Nota', '<span class="muted">Le lune non producono risorse: ci puoi solo immagazzinare quelle trasportate.</span>');
   const rows = [['metalMine', p.m - 30 * G.speed], ['crystalMine', p.c - 15 * G.speed], ['deutSynth', p.d + p.fusDeut], ['solarPlant'], ['fusionPlant'], ['solarSat']];
@@ -149,7 +150,7 @@ function vResources() {
         : nf((pl.ships.solarSat || 0) * satEnergy(pl) * pl.pct.solarSat / 100) + ' energia';
     t += `<tr><td>${name}</td><td>${lv}</td><td>${pr}</td><td>${opt(id)}</td></tr>`;
   }
-  t += `</table><p>Energia: <b class="${p.energyProd >= p.energyUse ? 'ok' : 'bad'}">${nf(p.energyProd - p.energyUse)}</b> (prod. ${nf(p.energyProd)} / consumo ${nf(p.energyUse)}) · Efficienza miniere: <b>${(p.factor * 100).toFixed(0)}%</b></p>
+  t += `</table>${(pl.ships.crawler || 0) ? `<p>Crawler: <b>${nf(pl.ships.crawler)}</b> (usati ${nf(crawlerUsed(pl))} su ${nf(crawlerMax(pl))}) · bonus miniere <b class="ok">+${((crawlerBonus(pl) - 1) * 100).toFixed(2)}%</b></p>` : ''}<p>Energia: <b class="${p.energyProd >= p.energyUse ? 'ok' : 'bad'}">${nf(p.energyProd - p.energyUse)}</b> (prod. ${nf(p.energyProd)} / consumo ${nf(p.energyUse)}) · Efficienza miniere: <b>${(p.factor * 100).toFixed(0)}%</b></p>
   <p>Capienza magazzini: ${nf(cap[0])} M · ${nf(cap[1])} C · ${nf(cap[2])} D</p>`;
   return h + panel('Impostazioni risorse', t);
 }
@@ -161,7 +162,7 @@ const vDefence = () => { const pl = cur(); return queueBox(pl, 's') + itemsView(
 function fleetMoves() {
   if (!G.fleets.length && !G.missiles.length) return '<span class="muted">Nessuna flotta in volo.</span>';
   let h = '<table><tr><th>Missione</th><th>Rotta</th><th>Navi</th><th>Carico</th><th>Arrivo</th><th></th></tr>';
-  for (const m of G.missiles) { const o = G.planets.find(p => p.id === m.from) || G.planets[0]; h += `<tr><td>Missili</td><td>[${o.g}:${o.s}:${o.p}] → [${m.to.g}:${m.to.s}:${m.to.p}]</td><td>${nf(m.n)} × ${DEFS.ipm.name}</td><td>—</td><td>${cd(m.arr)}</td><td></td></tr>`; }
+  for (const m of G.missiles) { const o = m.hostile ? m.from : (G.planets.find(p => p.id === m.from) || G.planets[0]); h += `<tr class="${m.hostile ? 'hostile' : ''}"><td>${m.hostile ? 'Missili ostili' : 'Missili'}</td><td>[${o.g}:${o.s}:${o.p}] → [${m.to.g}:${m.to.s}:${m.to.p}]</td><td>${nf(m.n)} × ${DEFS.ipm.name}</td><td>—</td><td>${cd(m.arr)}</td><td></td></tr>`; }
   for (const f of G.fleets) {
     const o = G.planets.find(p => p.id === f.from) || G.planets[0];
     const route = f.state === 'out' ? `[${o.g}:${o.s}:${o.p}] → [${f.to.g}:${f.to.s}:${f.to.p}]` : `[${f.to.g}:${f.to.s}:${f.to.p}] → [${o.g}:${o.s}:${o.p}]`;
@@ -254,21 +255,29 @@ function vGalaxy() {
     if (occ && occ.type === 'player') { name = occ.planet.name + (G.planets.some(m => m.moon && m.g === g && m.s === s && m.p === p) ? ' 🌙' : ''); who = `<b>${G.name}</b>`; }
     else if (occ) { name = occ.npc.name; who = occ.npc.owner; acts = `<button class="mini" onclick="spy(${g},${s},${p})">Spia</button> ${G.cheat.spy ? `<button class="mini on" onclick="cheatSpy(${g},${s},${p})">Spia cheat</button> ` : ''}<button class="mini" onclick="fleetTo(${g},${s},${p},'attack')">Attacca</button>` + (hasIpm && g === pl.g && Math.abs(s - pl.s) <= missileRange() ? ` <button class="mini" onclick="fireIPM(${g},${s},${p})">IPM</button>` : '') + (hasPh && g === pl.g && Math.abs(s - pl.s) <= phalanxRange(pl) ? ` <button class="mini" onclick="phalanxScan(${g},${s},${p})">Scansiona</button>` : ''); }
     else acts = `<button class="mini" onclick="fleetTo(${g},${s},${p},'colonize',{colonyShip:Math.min(1,cur().ships.colonyShip||0)})">Colonizza</button>`;
-    if (deb) acts += ` <button class="mini" onclick="fleetTo(${g},${s},${p},'recycle',{recycler:Math.min(cur().ships.recycler||0,${Math.ceil((deb[0] + deb[1]) / DEFS.recycler.cap)})})">Ricicla</button>`;
+    if (deb) acts += ` <button class="mini" onclick="fleetTo(${g},${s},${p},'recycle',recycleSel(${deb[0] + deb[1]}))">Ricicla</button>`;
     t += `<tr class="${occ && occ.type === 'player' ? 'mine' : ''}"><td>${p}</td><td>${name}</td><td>${who}</td><td>${deb ? `<span class="rm">${nf(deb[0])}</span> <span class="rc">${nf(deb[1])}</span>` : ''}</td><td>${acts}</td></tr>`;
   }
   t += `<tr><td>16</td><td colspan="3" class="muted">Spazio profondo</td><td><button class="mini" onclick="fleetTo(${g},${s},16,'expedition')">Spedizione</button></td></tr></table>`;
   return panel(`Galassia ${g}:${s}`, h + '<div style="height:10px"></div>' + t);
 }
+function recycleSel(total) {
+  const ships = {}, sh = cur().ships;
+  const r = Math.min(sh.recycler || 0, Math.ceil(total / DEFS.recycler.cap)); if (r) ships.recycler = r;
+  const left = total - r * DEFS.recycler.cap;
+  if (left > 0 && sh.reaper) ships.reaper = Math.min(sh.reaper, Math.ceil(left / DEFS.reaper.cap));
+  return ships;
+}
+const CS = { ids: [], sec: 'r' };
 function cheatSpy(g, s, p) {
   const occ = occupant(g, s, p); if (!occ || occ.type !== 'npc') return;
-  cheatSpyReport(occ.npc); toast('Rapporto spia cheat nei messaggi.'); go('messages'); save();
+  CS.ids = [occ.npc]; go('empirecheat');
 }
 function cheatSearch() {
   const q = ($('#cq').value || '').trim().toLowerCase(); if (!q) return toast('Inserisci un nome utente.', true);
-  const found = G.npcs.filter(n => n.owner.toLowerCase().includes(q)).slice(0, 10);
+  const found = G.npcs.filter(n => n.owner.toLowerCase().includes(q)).slice(0, 12);
   if (!found.length) return toast('Nessun giocatore trovato.', true);
-  found.forEach(cheatSpyReport); toast(`${found.length} rapporti nei messaggi.`); go('messages'); save();
+  CS.ids = found; go('empirecheat');
 }
 function spy(g, s, p) {
   const err = launch(cur(), { probe: spyN }, { g, s, p }, 'espionage', 100, [0, 0, 0]);
@@ -307,7 +316,7 @@ function vTech() {
   const pl = cur(), all = [...IDS.b, ...IDS.t, ...IDS.s, ...IDS.d];
   let sel = SELV.tech; if (!DEFS[sel]) sel = 'metalMine';
   const d = DEFS[sel], un = UNLOCKS[sel] || [];
-  const tree = `<div class="detail">${icon(sel, 'l')}<div><h2>${d.name}</h2><p class="desc">${d.desc}</p>${statsLine(sel)}${USES[sel] ? `<p><b>Applicazione:</b> ${USES[sel]}</p>` : ''}
+  const tree = `<div class="detail">${icon(sel, 'l')}<div><h2>${d.name}</h2><p class="desc">${d.desc}</p>${statsLine(sel)}${unitFacts(sel, pl)}${techFacts(sel)}${USES[sel] ? `<p><b>Applicazione:</b> ${USES[sel]}</p>` : ''}
     <div class="treecols"><div><h4>Per sbloccarla serve</h4>${Object.keys(d.req).length ? `<ul class="tree">${treeNode(pl, sel, 0, [])}</ul>` : '<span class="ok">Nessun requisito</span>'}</div>
     <div><h4>Cosa sblocca</h4>${un.length ? '<ul class="tree flat">' + un.map(u => `<li><span class="${meets(pl, u) ? 'ok' : 'bad'}">${icon(u, 's')} <a class="lk" onclick="openTree('${u}')">${DEFS[u].name}</a> <small>(richiede liv. ${DEFS[u].req[sel]})</small></span></li>`).join('') + '</ul>' : '<span class="muted">Nessuna altra voce dipende da questa.</span>'}</div></div></div></div>`;
   const pick = `<div class="tiles">${all.map(i => tile(i, pl, sel).replace(/onclick="selItem\('([^']+)'\)"/, "onclick=\"openTree('$1')\"")).join('')}</div>`;
@@ -352,6 +361,38 @@ function vEmpire() {
   return panel('Impero', ctl + `<div class="empwrap"><table class="emp">${head}${EV.sec === 'r' ? '' : info}${body}</table></div>`);
 }
 
+// ---------- Impero cheat ----------
+function vEmpireCheat() {
+  const list = CS.ids.filter(n => G.npcs.includes(n));
+  const tabs = [['b', 'Edifici'], ['r', 'Risorse'], ['s', 'Navi'], ['d', 'Difese'], ['t', 'Ricerca']];
+  const ctl = `<div class="emptabs"><button onclick="go('galaxy')">◀ Galassia</button> <span class="sep"></span>` +
+    tabs.map(([k, n]) => `<button class="${CS.sec === k ? 'on' : ''}" onclick="CS.sec='${k}';render()">${n}</button>`).join('') + '</div>';
+  if (!list.length) return panel('Impero cheat', ctl + '<p class="muted">Nessun giocatore selezionato.</p>');
+  const head = `<tr><th></th>${list.map(n => `<th class="ec" onclick="GV.g=${n.g};GV.s=${n.s};go('galaxy')" title="Vai alla galassia">${n.name}<small>${n.owner} [${n.g}:${n.s}:${n.p}]</small></th>`).join('')}<th class="ec tot">Totale</th></tr>`;
+  const num = v => v ? nf(v) : '<span class="muted">—</span>';
+  const row = (label, vals, fmt, tot) => `<tr><td class="el">${label}</td>${vals.map(v => `<td>${(fmt || (x => x))(v)}</td>`).join('')}<td class="tot">${tot === false || list.length < 2 ? '' : (fmt || (x => x))(vals.reduce((a, b) => a + b, 0))}</td></tr>`;
+  const span = list.length + 2;
+  const info = [['Stile', list.map(n => NPC_STYLES[n.style].name)], ['Abilità', list.map(n => NPC_SKILLS[n.skill].name)], ['Punti', list.map(n => nf(npcPoints(n)))], ['Età', list.map(n => n.age.toFixed(1) + ' h')]]
+    .map(([l, v]) => `<tr><td class="el">${l}</td>${v.map(x => `<td>${x}</td>`).join('')}<td class="tot"></td></tr>`).join('');
+  let body = '';
+  if (CS.sec === 'b') {
+    body = `<tr class="sub"><td colspan="${span}">Gli NPC non hanno edifici singoli: le miniere sono riassunte in un'unica produzione, che cresce col tempo e con gli investimenti.</td></tr>` +
+      row('Produzione metallo/h', list.map(n => Math.floor(n.rate)), num) + row('Produzione cristallo/h', list.map(n => Math.floor(n.rate * 0.5)), num) + row('Produzione deuterio/h', list.map(n => Math.floor(n.rate * 0.25)), num) +
+      row('Produzione base', list.map(n => Math.floor(n.rate0)), num, false);
+  } else if (CS.sec === 'r') {
+    const R = [['Metallo', 0], ['Cristallo', 1], ['Deuterio', 2]];
+    body = `<tr class="sub"><td colspan="${span}">Risorse attuali</td></tr>` + R.map(([nm, k]) => row(nm, list.map(n => Math.floor(n.res[k])), num)).join('') +
+      `<tr class="sub"><td colspan="${span}">Tesoro da investire</td></tr>` + R.map(([nm, k]) => row(nm, list.map(n => Math.floor((n.bank || [0, 0, 0])[k])), num)).join('') +
+      `<tr class="sub"><td colspan="${span}">Capienza magazzini</td></tr>` + R.map(([nm, k]) => row(nm, list.map(n => Math.floor(n.rate * [48, 24, 12][k])), num, false)).join('');
+  } else if (CS.sec === 's' || CS.sec === 'd') {
+    const key = CS.sec === 's' ? 'fleet' : 'def';
+    body = IDS[CS.sec].map(i => row(`${icon(i, 's')} ${DEFS[i].name}`, list.map(n => n[key][i] || 0), num)).join('');
+  } else {
+    body = IDS.t.filter(i => ['weapons', 'shield', 'armour', 'espionage'].includes(i)).map(i => row(`${icon(i, 's')} ${DEFS[i].name}`, list.map(n => npcTech(n)[i]), num, false)).join('');
+  }
+  return panel('Impero cheat', ctl + `<div class="empwrap"><table class="emp">${head}${info}${body}</table></div>`);
+}
+
 const turnLabel = min => min < 60 ? `${min} min` : `${min / 60} h`;
 function setOpt(k, v) { G.opts[k] = typeof G.opts[k] === 'boolean' ? !!v : parseFloat(v); save(); render(); }
 function vOptions() {
@@ -371,7 +412,7 @@ function vOptions() {
   <select id="trn">${[1, 5, 15, 30, 60, 120, 240, 720, 1440].map(v => `<option value="${v}"${Math.round(turnMs() / 60000) === v ? ' selected' : ''}>${turnLabel(v)}</option>`).join('')}</select>
   <button onclick="G.turnMs=+$('#trn').value*60000;done()">Applica</button>`) +
     panel('Salvataggio', `<p class="note">La partita si salva da sola nel browser. Con <b>Salva partita</b> scarichi un file JSON, che puoi ricaricare con <b>Carica</b>: la partita riprende dal momento del salvataggio.</p><button onclick="saveFile()">Salva partita</button> <button onclick="$('#loadfile').click()">Carica</button>`) +
-    panel('Immagini personali', `<span class="muted">Per sostituire le icone con tue immagini, aggiungi un file <code>png</code> o <code>jpg</code> nella cartella <code>img/</code> (dove ci sono già le icone attuali in <code>svg</code>) chiamandolo con l'id della voce (es. <code>metalMine.jpg</code>, <code>smallCargo.png</code>).</span>`) +
+    panel('Immagini personali', `<span class="muted">Per sostituire le icone con tue immagini, aggiungi un file <code>png</code> o <code>jpg</code> nella cartella giusta di <code>img/</code>: <code>edifici</code>, <code>ricerche</code>, <code>navi</code> o <code>difese</code> (dove ci sono già le icone attuali in <code>svg</code>), chiamandolo con l'id della voce (es. <code>img/edifici/metalMine.jpg</code>, <code>img/navi/smallCargo.png</code>).</span>`) +
     panel('Nuova partita', `<button class="danger" onclick="if(confirm('Cancellare la partita?')){localStorage.removeItem(SAVE_KEY);location.reload()}">Ricomincia da zero</button>`);
 }
 function saveFile() {
@@ -443,7 +484,7 @@ function cheatDo(kind, a, b) {
 
 // ---------- Simulatore di battaglia ----------
 const SIM = { a: { ships: {}, tech: { weapons: 0, shield: 0, armour: 0 } }, d: { ships: {}, defs: {}, tech: { weapons: 0, shield: 0, armour: 0 }, res: [0, 0, 0] }, runs: 10, res: null };
-const SIM_A = () => IDS.s.filter(i => !DEFS[i].noFly), SIM_DS = () => IDS.s, SIM_DD = () => IDS.d.filter(i => i !== 'ipm');
+const SIM_A = () => IDS.s.filter(i => !DEFS[i].noFly), SIM_DS = () => IDS.s, SIM_DD = () => IDS.d.filter(i => i !== 'ipm' && i !== 'abm');
 const simNum = v => Math.max(0, Math.floor(+String(v).replace(/\./g, '')) || 0);
 const myTech = () => ({ weapons: G.tech.weapons || 0, shield: G.tech.shield || 0, armour: G.tech.armour || 0 });
 const simCap = ships => Object.entries(ships).reduce((s, [id, n]) => s + DEFS[id].cap * n, 0);
@@ -501,7 +542,7 @@ function vSim() {
 }
 
 // ---------- Render ----------
-const VIEWS = { overview: ['Panoramica', vOverview], empire: ['Impero', vEmpire], resources: ['Risorse', vResources], facilities: ['Strutture', vFacilities], research: ['Ricerca', vResearch], shipyard: ['Cantiere spaziale', vShipyard], defence: ['Difesa', vDefence], fleet: ['Flotta', vFleet], sim: ['Simulatore', vSim], galaxy: ['Galassia', vGalaxy], messages: ['Messaggi', vMessages], highscore: ['Classifica', vHighscore], tech: ['Tecnologia', vTech], options: ['Opzioni', vOptions], cheat: ['Cheat', vCheat] };
+const VIEWS = { overview: ['Panoramica', vOverview], empire: ['Impero', vEmpire], empirecheat: ['Impero cheat', vEmpireCheat], resources: ['Risorse', vResources], facilities: ['Strutture', vFacilities], research: ['Ricerca', vResearch], shipyard: ['Cantiere spaziale', vShipyard], defence: ['Difesa', vDefence], fleet: ['Flotta', vFleet], sim: ['Simulatore', vSim], galaxy: ['Galassia', vGalaxy], messages: ['Messaggi', vMessages], highscore: ['Classifica', vHighscore], tech: ['Tecnologia', vTech], options: ['Opzioni', vOptions], cheat: ['Cheat', vCheat] };
 function planetList() {
   const hue = p => planetHue(p);
   let h = '<h4>Pianeti</h4>';
@@ -515,7 +556,7 @@ function planetList() {
   return h;
 }
 function render() {
-  $('#nav').innerHTML = Object.entries(VIEWS).filter(([k]) => k !== 'cheat').map(([k, [n]]) => `<a class="${k === view ? 'on' : ''}" onclick="go('${k}')">${n}${k === 'messages' && G.unread ? ` <span class="badge">${G.unread}</span>` : ''}</a>`).join('') +
+  $('#nav').innerHTML = Object.entries(VIEWS).filter(([k]) => k !== 'cheat' && k !== 'empirecheat').map(([k, [n]]) => `<a class="${k === view ? 'on' : ''}" onclick="go('${k}')">${n}${k === 'messages' && G.unread ? ` <span class="badge">${G.unread}</span>` : ''}</a>`).join('') +
     `<div class="navbtns"><button class="go" onclick="nextTurn(1)">▶ Fine turno</button><button class="skip" onclick="nextTurn(5)" title="Passa 5 turni">×5</button><button class="skip" onclick="nextTurn(20)" title="Passa 20 turni">×20</button></div>`;
   $('#cheatbtn').classList.toggle('on', view === 'cheat');
   $('#planets').innerHTML = planetList();

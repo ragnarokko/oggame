@@ -21,6 +21,7 @@ def('b', 'shipyard', 'Cantiere spaziale', '🏗️', [400, 200, 100], 2, { robot
 def('b', 'researchLab', 'Laboratorio di ricerca', '🔬', [200, 400, 200], 2, {}, { grp: 'fac', desc: 'Sblocca le ricerche e ne riduce la durata.' });
 def('b', 'nanite', 'Fabbrica di naniti', '🧬', [1000000, 500000, 100000], 2, { robotics: 10, computerTech: 10 }, { grp: 'fac', desc: 'Dimezza i tempi di costruzione per ogni livello.' });
 def('b', 'terraformer', 'Terraformer', '🌍', [0, 50000, 100000], 2, { nanite: 1, energyTech: 12 }, { grp: 'fac', desc: 'Aggiunge 5 campi edificabili per livello.' });
+def('b', 'spaceDock', 'Porto spaziale', '⚓', [200, 0, 50], 5, { shipyard: 2 }, { grp: 'fac', desc: 'Ripara parte delle navi perse quando difendi un pianeta: 5% per livello.' });
 def('b', 'missileSilo', 'Silo missilistico', '🚀', [20000, 20000, 1000], 2, { shipyard: 1 }, { grp: 'fac', desc: 'Custodisce i missili interplanetari: 5 per livello.' });
 def('b', 'lunarBase', 'Base lunare', '🌙', [20000, 40000, 20000], 2, {}, { grp: 'fac', desc: 'Rende abitabile la luna: +3 campi per livello.' });
 def('b', 'phalanx', 'Falange dei sensori', '📶', [20000, 40000, 20000], 2, { lunarBase: 1 }, { grp: 'fac', desc: 'Scansiona i movimenti di flotta nei sistemi vicini (raggio livello² − 1 sistemi). Costa 5.000 deuterio a scansione.' });
@@ -58,8 +59,12 @@ def('s', 'probe', 'Sonda spia', '📡', [0, 1000, 0], 1, { shipyard: 3, combusti
 def('s', 'bomber', 'Bombardiere', '💣', [50000, 25000, 15000], 1, { shipyard: 8, impulse: 6, plasmaTech: 5 }, { atk: 1000, shield: 500, speed: 4000, cap: 500, fuel: 700, drive: 'i', desc: 'Demolisce le difese planetarie.' });
 def('s', 'destroyer', 'Corazzata', '🛳️', [60000, 50000, 15000], 1, { shipyard: 9, hyperDrive: 6, hyperspaceTech: 5 }, { atk: 2000, shield: 500, speed: 5000, cap: 2000, fuel: 1000, drive: 'h', desc: 'Il terrore dei laser e degli incrociatori da battaglia.' });
 def('s', 'battlecruiser', 'Incrociatore da battaglia', '🦅', [30000, 40000, 15000], 1, { shipyard: 8, hyperDrive: 5, hyperspaceTech: 5, laserTech: 12 }, { atk: 700, shield: 400, speed: 10000, cap: 750, fuel: 250, drive: 'h', desc: 'Intercetta e distrugge le flotte di navi.' });
+def('s', 'reaper', 'Mietitrice', '🪓', [85000, 55000, 20000], 1, { shipyard: 10, hyperDrive: 6, shield: 6 }, { atk: 2800, shield: 700, speed: 7000, cap: 10000, fuel: 1100, drive: 'h', desc: 'Nave da guerra che raccoglie anche i detriti.' });
+def('s', 'pathfinder', 'Esploratore', '🧭', [8000, 15000, 8000], 1, { shipyard: 5, hyperDrive: 2, shield: 4 }, { atk: 200, shield: 100, speed: 12000, cap: 10000, fuel: 300, drive: 'h', desc: 'Veloce, con ampia stiva: ideale per le spedizioni.' });
 def('s', 'deathstar', 'Morte nera', '🌑', [5000000, 4000000, 1000000], 1, { shipyard: 12, hyperDrive: 7, hyperspaceTech: 6 }, { atk: 200000, shield: 50000, speed: 100, cap: 1000000, fuel: 1, drive: 'h', desc: 'L\'arma definitiva. Lentissima.' });
 def('s', 'solarSat', 'Satellite solare', '🛰️', [0, 2000, 500], 1, { shipyard: 1 }, { atk: 1, shield: 1, speed: 0, cap: 0, fuel: 0, drive: 'c', noFly: true, desc: 'Produce energia in orbita (non si può inviare).' });
+
+def('s', 'crawler', 'Crawler', '🚜', [2000, 2000, 1000], 1, { shipyard: 5, combustion: 4, hyperspaceTech: 4 }, { atk: 1, shield: 1, speed: 0, cap: 0, fuel: 0, drive: 'c', noFly: true, where: 'p', desc: 'Veicolo minerario: aumenta la produzione delle miniere.' });
 
 // ---- Difese ----
 def('d', 'rocket', 'Lanciamissili', '🎯', [2000, 0, 0], 1, { shipyard: 1 }, { atk: 80, shield: 20, desc: 'Difesa economica.' });
@@ -70,7 +75,8 @@ def('d', 'ion', 'Cannone ionico', '🌩️', [5000, 3000, 0], 1, { shipyard: 4, 
 def('d', 'plasma', 'Torretta al plasma', '☄️', [50000, 50000, 30000], 1, { shipyard: 8, plasmaTech: 7 }, { atk: 3000, shield: 300, desc: 'La difesa più potente.' });
 def('d', 'smallDome', 'Cupola scudo piccola', '🔵', [10000, 10000, 0], 1, { shipyard: 1, shield: 2 }, { atk: 1, shield: 2000, max: 1, desc: 'Un solo esemplare per pianeta.' });
 def('d', 'largeDome', 'Cupola scudo grande', '🟦', [50000, 50000, 0], 1, { shipyard: 6, shield: 6 }, { atk: 1, shield: 10000, max: 1, desc: 'Un solo esemplare per pianeta.' });
-def('d', 'ipm', 'Missile interplanetario', '🧨', [12500, 2500, 10000], 1, { missileSilo: 4, impulse: 1 }, { atk: 12000, shield: 1, missile: true, desc: 'Distrugge le difese di un pianeta NPC (raggio: 2 × impulso − 1 sistemi). Richiede spazio nel silo.' });
+def('d', 'ipm', 'Missile interplanetario', '🧨', [12500, 2500, 10000], 1, { missileSilo: 4, impulse: 1 }, { atk: 12000, shield: 1, missile: true, size: 2, desc: 'Distrugge le difese di un pianeta NPC (raggio: 2 × impulso − 1 sistemi). Richiede spazio nel silo.' });
+def('d', 'abm', 'Missile anti-balistico', '🛡️', [8000, 0, 2000], 1, { missileSilo: 2 }, { atk: 1, shield: 1, missile: true, size: 1, desc: 'Intercetta i missili interplanetari nemici: uno a testa.' });
 
 // Rapid fire: RF[attaccante][bersaglio] = n  (probabilità (n-1)/n di sparare ancora)
 const RF = {
@@ -80,21 +86,22 @@ const RF = {
   battleship: { probe: 5 }, colonyShip: { probe: 5 }, recycler: { probe: 5 },
   bomber: { probe: 5, rocket: 20, lightLaser: 20, heavyLaser: 10, ion: 10, gauss: 5 },
   destroyer: { probe: 5, lightLaser: 10, battlecruiser: 2 },
+  reaper: { probe: 5, battleship: 7, bomber: 4, destroyer: 3 }, pathfinder: { probe: 5 },
   battlecruiser: { probe: 5, smallCargo: 3, largeCargo: 3, heavyFighter: 4, cruiser: 4, battleship: 7 },
   deathstar: { probe: 1250, smallCargo: 250, largeCargo: 250, lightFighter: 200, heavyFighter: 100, cruiser: 33, battleship: 30,
-    colonyShip: 250, recycler: 250, bomber: 25, destroyer: 5, battlecruiser: 15, rocket: 200, lightLaser: 200, heavyLaser: 100, gauss: 50, ion: 100 },
+    colonyShip: 250, recycler: 250, bomber: 25, destroyer: 5, battlecruiser: 15, rocket: 200, lightLaser: 200, heavyLaser: 100, gauss: 50, ion: 100, pathfinder: 30, reaper: 10 },
 };
 
 // Nomi italiani standard
 const NAMES = {
   metalMine: 'Miniera di metallo', crystalMine: 'Miniera di cristallo', deutSynth: 'Sintetizzatore di deuterio', solarPlant: 'Centrale solare', fusionPlant: 'Centrale a fusione',
   metalStorage: 'Deposito di metallo', crystalStorage: 'Deposito di cristallo', deutTank: 'Cisterna di deuterio', robotics: 'Fabbrica dei robot', shipyard: 'Cantiere spaziale',
-  researchLab: 'Laboratorio di ricerca', nanite: 'Fabbrica di naniti', terraformer: 'Terraformer', missileSilo: 'Silo missilistico', lunarBase: 'Base lunare', phalanx: 'Sensore Phalanx', jumpGate: 'Portale spaziale',
+  researchLab: 'Laboratorio di ricerca', nanite: 'Fabbrica di naniti', terraformer: 'Terraformer', missileSilo: 'Silo missilistico', spaceDock: 'Porto spaziale', lunarBase: 'Base lunare', phalanx: 'Sensore Phalanx', jumpGate: 'Portale spaziale',
   energyTech: 'Tecnologia Energetica', laserTech: 'Tecnologia Laser', ionTech: 'Tecnologia Ionica', hyperspaceTech: 'Tecnologia Iperspaziale', plasmaTech: 'Tecnologia Plasma',
   combustion: 'Propulsore a combustione', impulse: 'Propulsore a impulso', hyperDrive: 'Propulsore Iperspaziale', espionage: 'Tecnologia Spionaggio', computerTech: 'Tecnologia Computer',
   astro: 'Astrofisica', weapons: 'Tecnologia Armi', shield: 'Tecnologia Scudo', armour: 'Tecnologia Corazza',
   smallCargo: 'Cargo leggero', largeCargo: 'Cargo pesante', lightFighter: 'Caccia leggero', heavyFighter: 'Caccia pesante', cruiser: 'Incrociatore', battleship: 'Nave da battaglia',
-  colonyShip: 'Colonizzatrice', recycler: 'Riciclatrice', probe: 'Sonda spia', bomber: 'Bombardiere', destroyer: 'Corazzata', battlecruiser: 'Incrociatore da battaglia', deathstar: 'Morte Nera', solarSat: 'Satellite solare',
-  rocket: 'Lanciamissili', lightLaser: 'Laser leggero', heavyLaser: 'Laser pesante', gauss: 'Cannone di Gauss', ion: 'Cannone a ioni', plasma: 'Cannone al plasma', smallDome: 'Cupola scudo piccola', largeDome: 'Cupola scudo grande', ipm: 'Missile interplanetario',
+  colonyShip: 'Colonizzatrice', recycler: 'Riciclatrice', probe: 'Sonda spia', bomber: 'Bombardiere', destroyer: 'Corazzata', battlecruiser: 'Incrociatore da battaglia', deathstar: 'Morte Nera', reaper: 'Mietitrice', pathfinder: 'Esploratore', crawler: 'Crawler', solarSat: 'Satellite solare',
+  rocket: 'Lanciamissili', lightLaser: 'Laser leggero', heavyLaser: 'Laser pesante', gauss: 'Cannone di Gauss', ion: 'Cannone a ioni', plasma: 'Cannone al plasma', smallDome: 'Cupola scudo piccola', largeDome: 'Cupola scudo grande', ipm: 'Missile interplanetario', abm: 'Missile anti-balistico',
 };
 for (const [id, n] of Object.entries(NAMES)) DEFS[id].name = n;

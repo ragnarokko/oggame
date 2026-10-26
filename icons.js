@@ -1,4 +1,4 @@
-// Icone SVG originali (stile "tecnologico" scuro) generate per ogni voce; si possono sostituire con immagini proprie in img/<id>.png|jpg
+// Icone SVG originali (stile "tecnologico" scuro) generate per ogni voce; si possono sostituire con immagini proprie in img/<cartella>/<id>.png|jpg
 const SH = {
   mine: () => `<path d="M16 80h68l-10-28H26z"/><path d="M32 52l18-32 18 32"/><path d="M50 20V10M42 80V62h16v18"/>`,
   crystal: () => `<path d="M50 12l24 24-24 52-24-52z"/><path d="M26 36h48M50 12v76M38 36l12 52M62 36L50 88"/>`,
@@ -56,15 +56,15 @@ const SH = {
 const ICON_MAP = {
   metalMine: ['mine', 28], crystalMine: ['crystal', 200], deutSynth: ['drop', 170], solarPlant: ['sun', 48], fusionPlant: ['atom', 30],
   metalStorage: ['crate', 28], crystalStorage: ['crate', 200], deutTank: ['tank', 170], robotics: ['robot', 210], shipyard: ['dock', 215],
-  researchLab: ['flask', 260], nanite: ['dna', 280], terraformer: ['globe', 140], missileSilo: ['silo', 0], lunarBase: ['moon', 220], phalanx: ['radar', 190], jumpGate: ['portal', 270],
+  researchLab: ['flask', 260], nanite: ['dna', 280], terraformer: ['globe', 140], missileSilo: ['silo', 0], spaceDock: ['dock', 160], lunarBase: ['moon', 220], phalanx: ['radar', 190], jumpGate: ['portal', 270],
   energyTech: ['bolt', 50], laserTech: ['beam', 0], ionTech: ['orbit', 190], hyperspaceTech: ['spiral', 275], plasmaTech: ['flame', 20],
   combustion: ['thrust1', 25], impulse: ['thrust2', 200], hyperDrive: ['thrust3', 285], espionage: ['eye', 150], computerTech: ['chip', 190],
   astro: ['star', 240], weapons: ['cross', 5], shield: ['shield', 205], armour: ['plate', 30],
   smallCargo: ['cargoS', 200], largeCargo: ['cargoL', 210], lightFighter: ['dart', 190], heavyFighter: ['dartW', 195], cruiser: ['cruiserS', 205],
   battleship: ['bship', 215], colonyShip: ['colony', 140], recycler: ['recyc', 100], probe: ['probe', 160], bomber: ['bomber', 15],
-  destroyer: ['destroyer', 280], battlecruiser: ['bcruiser', 240], deathstar: ['dstar', 220], solarSat: ['sat', 48],
+  destroyer: ['destroyer', 280], battlecruiser: ['bcruiser', 240], deathstar: ['dstar', 220], reaper: ['destroyer', 345], pathfinder: ['cruiserS', 120], crawler: ['recyc', 35], solarSat: ['sat', 48],
   rocket: ['launcher', 20], lightLaser: ['laser', 10], heavyLaser: ['laser', 335], gauss: ['gauss', 200], ion: ['ionC', 185], plasma: ['plasmaC', 140],
-  smallDome: ['domeS', 190], largeDome: ['domeL', 210], ipm: ['ipmS', 0],
+  smallDome: ['domeS', 190], largeDome: ['domeL', 210], ipm: ['ipmS', 0], abm: ['ipmS', 200],
 };
 function svgIcon(id) {
   const [shape, h] = ICON_MAP[id] || ['crate', 210];
@@ -73,7 +73,8 @@ function svgIcon(id) {
 }
 // Se in img/ esiste un file con l'id (png, jpg o svg) viene mostrato sopra l'icona SVG.
 function imgErr(el) { if (el.src.endsWith('.png')) el.src = el.src.replace(/\.png$/, '.jpg'); else if (el.src.endsWith('.jpg')) el.src = el.src.replace(/.jpg$/, '.svg'); else el.style.display = 'none'; }
-const icon = (id, cls) => `<span class="ico ${cls || ''}">${svgIcon(id)}<img src="img/${id}.png" onerror="imgErr(this)" alt=""></span>`;
+const IMG_DIR = { b: 'edifici', t: 'ricerche', s: 'navi', d: 'difese' };
+const icon = (id, cls) => `<span class="ico ${cls || ''}">${svgIcon(id)}<img src="img/${IMG_DIR[DEFS[id].type]}/${id}.png" onerror="imgErr(this)" alt=""></span>`;
 const RES_ICON = {
   m: `<svg viewBox="0 0 24 24" class="ri"><path d="M4 16l3-8h10l3 8z" fill="#c9a66b" stroke="#f0d9a8" stroke-width="1.3"/><path d="M7 8l2-3h6l2 3" fill="none" stroke="#f0d9a8" stroke-width="1.3"/></svg>`,
   c: `<svg viewBox="0 0 24 24" class="ri"><path d="M12 3l6 6-6 12-6-12z" fill="#4aa8e8" stroke="#a9dcff" stroke-width="1.3"/><path d="M6 9h12" stroke="#a9dcff" stroke-width="1.1"/></svg>`,

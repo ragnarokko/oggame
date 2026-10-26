@@ -39,6 +39,10 @@ function reqText(pl, id) {
   return Object.entries(DEFS[id].req).map(([k, v]) => `<span class="${lvlOf(pl, k) >= v ? 'ok' : 'bad'}">${DEFS[k].name} ${v}</span>`).join(', ');
 }
 
+// Crawler: +0,02% di produzione mineraria ciascuno, al massimo +50%; ne servono al più 8 per livello di miniera.
+const crawlerMax = pl => 8 * ((pl.b.metalMine || 0) + (pl.b.crystalMine || 0) + (pl.b.deutSynth || 0));
+const crawlerUsed = pl => Math.min(pl.ships.crawler || 0, crawlerMax(pl));
+const crawlerBonus = pl => 1 + Math.min(0.5, crawlerUsed(pl) * 0.0002);
 function calcProd(pl) {
   if (pl.moon) return { m: 0, c: 0, d: 0, energyProd: 0, energyUse: 0, factor: 1, fusDeut: 0 };
   const S = G.speed, pc = pl.pct, b = pl.b, T = G.tech;
@@ -51,10 +55,11 @@ function calcProd(pl) {
   const prodE = sol + fus + sat;
   const f = use <= 0 ? 1 : Math.min(1, prodE / use);
   const pl_ = T.plasmaTech || 0;
-  const m = 30 * S + 30 * e(lm) * S * pc.metalMine / 100 * f * (1 + 0.01 * pl_);
-  const c = 15 * S + 20 * e(lc) * S * pc.crystalMine / 100 * f * (1 + 0.0066 * pl_);
+  const cb = crawlerBonus(pl);
+  const m = 30 * S + 30 * e(lm) * S * pc.metalMine / 100 * f * (1 + 0.01 * pl_) * cb;
+  const c = 15 * S + 20 * e(lc) * S * pc.crystalMine / 100 * f * (1 + 0.0066 * pl_) * cb;
   const fusDeut = 10 * e(lf) * S * pc.fusionPlant / 100;
-  const d = 10 * e(ld) * S * (1.44 - 0.004 * pl.maxTemp) * pc.deutSynth / 100 * f * (1 + 0.0033 * pl_) - fusDeut;
+  const d = 10 * e(ld) * S * (1.44 - 0.004 * pl.maxTemp) * pc.deutSynth / 100 * f * (1 + 0.0033 * pl_) * cb - fusDeut;
   return { m, c, d, energyProd: prodE, energyUse: use, factor: f, fusDeut };
 }
 
@@ -310,6 +315,9 @@ function cancelResearch() {
   const q = G.researchQ; if (!q) return;
   const pl = G.planets.find(p => p.id === q.planet) || G.planets[0]; refund(pl, q.cost); G.researchQ = null;
 }
+// Silo: 10 posti per livello; un missile interplanetario ne occupa 2, uno anti-balistico 1.
+const siloCap = pl => 10 * (pl.b.missileSilo || 0);
+const siloUsed = pl => ['ipm', 'abm'].reduce((s, id) => s + DEFS[id].size * ((pl.defs[id] || 0) + pl.shipQ.filter(q => q.id === id).reduce((a, q) => a + q.n, 0)), 0);
 function queueUnits(pl, id, n) {
   n = Math.floor(n); if (!(n > 0)) return 'Quantità non valida.';
   const d = DEFS[id];
@@ -319,8 +327,7 @@ function queueUnits(pl, id, n) {
     n = Math.min(n, d.max - have); if (n < 1) return 'Ne puoi avere solo uno.';
   }
   if (d.missile) {
-    const have = (pl.defs[id] || 0) + pl.shipQ.filter(q => q.id === id).reduce((s, q) => s + q.n, 0);
-    n = Math.min(n, 5 * (pl.b.missileSilo || 0) - have); if (n < 1) return 'Silo pieno: potenzia il silo missilistico.';
+    n = Math.min(n, Math.floor((siloCap(pl) - siloUsed(pl)) / d.size)); if (n < 1) return 'Silo pieno: potenzia il silo missilistico.';
   }
   const c = d.cost.map(x => x * n);
   if (!canAfford(pl, c)) return 'Risorse insufficienti.';
@@ -377,7 +384,7 @@ function launch(pl, ships, to, mission, pct, cargo) {
   else if (mission === 'espionage') { if (!occ || mine) return 'Puoi spiare solo pianeti NPC.'; if (ids.some(i => i !== 'probe')) return 'Lo spionaggio usa solo sonde.'; }
   else if (mission === 'transport' || mission === 'deploy') { if (!mine) return 'Destinazione: un tuo pianeta.'; }
   else if (mission === 'colonize') { if (occ) return 'La posizione è occupata.'; if (!ships.colonyShip) return 'Serve una nave colonia.'; if (planetCount() + G.fleets.filter(f => f.mission === 'colonize' && f.state === 'out').length >= maxPlanets()) return 'Limite di pianeti raggiunto (migliora Astrofisica).'; }
-  else if (mission === 'recycle') { if (!ships.recycler) return 'Servono riciclatori.'; if (!G.debris[coordKey(to.g, to.s, to.p)]) return 'Nessun campo di detriti lì.'; }
+  else if (mission === 'recycle') { if (!ships.recycler && !ships.reaper) return 'Servono riciclatrici o Mietitrici.'; if (!G.debris[coordKey(to.g, to.s, to.p)]) return 'Nessun campo di detriti lì.'; }
   else if (!isExp) return 'Missione non valida.';
   if (mission === 'attack' && !ids.some(i => DEFS[i].atk > 1)) return 'Servono navi da combattimento.';
   const info = flightInfo(ships, pl, to, pct);
@@ -438,7 +445,7 @@ function fleetArrive(f, t) {
     }
     case 'recycle': {
       const key = coordKey(to.g, to.s, to.p), deb = G.debris[key];
-      let cap = (f.ships.recycler || 0) * DEFS.recycler.cap, gm = 0, gc = 0;
+      let cap = (f.ships.recycler || 0) * DEFS.recycler.cap + (f.ships.reaper || 0) * DEFS.reaper.cap, gm = 0, gc = 0;
       if (deb) { gm = Math.min(deb[0], cap); cap -= gm; gc = Math.min(deb[1], cap); deb[0] -= gm; deb[1] -= gc; if (deb[0] + deb[1] < 1) delete G.debris[key]; }
       f.cargo = [gm, gc, 0];
       addMsg('fleet', 'Riciclaggio', `<p>Raccolti ${nf(gm)} metallo e ${nf(gc)} cristallo da ${label}.</p>`, t);
@@ -518,7 +525,7 @@ function expedition(f, t) {
   let title = 'Spedizione', body = '', delay = hold;
   if (r < 0.35) body = 'La flotta ha vagato nel vuoto senza trovare nulla di interessante.';
   else if (r < 0.62) {
-    const size = Math.min(cap, 30000 * (1 + (G.tech.astro || 0) * 0.25)) * rnd(0.3, 1);
+    const size = Math.min(cap, 30000 * (1 + (G.tech.astro || 0) * 0.25)) * (1 + Math.min(1, 0.02 * (f.ships.pathfinder || 0))) * rnd(0.3, 1);
     const k = rint(0, 2), mult = [1, 0.66, 0.4][k];
     const gain = [0, 0, 0]; gain[k] = Math.floor(size * mult); f.cargo = f.cargo.map((v, i) => v + gain[i]);
     body = `Un relitto abbandonato! Recuperati ${fmtRes(gain)}.`;
@@ -541,7 +548,7 @@ function expedition(f, t) {
 
 // ---------- Combattimento ----------
 function battle(A, D) {
-  const typeIds = [...IDS.s.filter(i => !DEFS[i].noFly || i === 'solarSat'), ...IDS.d];
+  const typeIds = [...IDS.s.filter(i => !DEFS[i].noFly || i === 'solarSat' || i === 'crawler'), ...IDS.d];
   const tIdx = {}; typeIds.forEach((id, i) => tIdx[id] = i);
   const mk = (src, tech) => {
     const w = 1 + 0.1 * (tech.weapons || 0), s = 1 + 0.1 * (tech.shield || 0), a = 1 + 0.1 * (tech.armour || 0);
@@ -617,8 +624,22 @@ function launchMissiles(pl, n, to, primary) {
   G.missiles.push({ id: G.nextFleet++, from: pl.id, to: { g: to.g, s: to.s, p: to.p }, n, primary, dep: now, arr: now + dur });
   return null;
 }
+function hostileMissileArrive(m, t) {
+  const pl = G.planets.find(p => p.id === m.pid); if (!pl) return;
+  const abm = Math.min(pl.defs.abm || 0, m.n), hit = m.n - abm;
+  if (abm) { pl.defs.abm -= abm; if (!pl.defs.abm) delete pl.defs.abm; }
+  let pool = hit * DEFS.ipm.atk * (1 + 0.1 * (m.weapons || 0));
+  const killed = {};
+  for (const id of [m.primary, ...MISSILE_ORDER.filter(i => i !== m.primary)].filter(i => i && DEFS[i])) {
+    const have = pl.defs[id] || 0; if (!have) continue;
+    const hull = DEFS[id].hull * (1 + 0.1 * (G.tech.armour || 0)), k = Math.min(have, Math.floor(pool / hull));
+    if (k > 0) { pl.defs[id] -= k; pool -= k * hull; killed[id] = k; if (!pl.defs[id]) delete pl.defs[id]; }
+  }
+  addMsg('battle', `🚀 Attacco missilistico su ${pl.name}`, `<p><b>${m.owner}</b> ha lanciato ${nf(m.n)} missili interplanetari su <b>${pl.name}</b>.</p><p>Intercettati dai missili anti-balistici: <b>${nf(abm)}</b>. Arrivati a segno: <b>${nf(hit)}</b>.</p><p>Difese distrutte:<br>${listUnits(killed)}</p>`, t);
+}
 function missileArrive(m, t) {
   G.missiles.splice(G.missiles.indexOf(m), 1);
+  if (m.hostile) return hostileMissileArrive(m, t);
   const to = m.to, label = `[${to.g}:${to.s}:${to.p}]`, occ = occupant(to.g, to.s, to.p);
   if (!occ || occ.type !== 'npc') return;
   const npc = occ.npc; npcUpdate(npc, t);
@@ -722,6 +743,7 @@ function battleHtml(res, aName, dName, loot) {
   h += `<tr><td>Perdite</td><td>${listUnits(res.a.lost)}</td><td>${listUnits(res.d.lost)}</td></tr>`;
   h += `<tr><td>Dopo</td><td>${listUnits(res.a.after)}</td><td>${listUnits(Object.assign({}, res.d.afterShips, res.d.afterDefs))}</td></tr></table>`;
   if (res.d.rebuilt) h += `<p>Difese ricostruite: ${res.d.rebuilt}.</p>`;
+  if (res.d.docked && Object.keys(res.d.docked).length) h += `<p>Navi riparate dal porto spaziale:<br>${listUnits(res.d.docked)}</p>`;
   if (loot && loot.some(v => v)) h += `<p>Bottino: ${fmtRes(loot)}.</p>`;
   return h + `<p>Campo di detriti: ${nf(res.debris[0])} metallo, ${nf(res.debris[1])} cristallo.</p>`;
 }
@@ -757,6 +779,11 @@ function npcTick(tk) {
     G.raids.push(r);
     const victim = best.tp === 'player' ? G.planets.find(p => p.id === best.pid) : npcAt(best);
     victim.hitUntil = tk + dur + A.hold * HOUR / G.speed;
+    if (best.tp === 'player' && npc.age >= 60 && Math.random() < 0.5) {
+      const pl = G.planets.find(p => p.id === best.pid), n = rint(3, 3 + Math.floor(npc.age / 40));
+      G.missiles.push({ id: G.nextFleet++, hostile: true, owner: npc.owner, pid: pl.id, from: from, to: { g: pl.g, s: pl.s, p: pl.p }, n, primary: MISSILE_ORDER[rint(0, 5)], weapons: npcTech(npc).weapons, dep: tk, arr: tk + dur * 0.6 });
+      addMsg('battle', `⚠️ Missili interplanetari in arrivo su ${pl.name}`, `<p><b>${npc.owner}</b> ha lanciato ${nf(n)} missili su <b>${pl.name}</b>. Ogni missile anti-balistico ne intercetta uno.</p>`, tk);
+    }
     wait(rnd(A.cd[0], A.cd[1]));
     if (best.tp === 'player') {
       const pl = G.planets.find(p => p.id === best.pid);
@@ -765,6 +792,17 @@ function npcTick(tk) {
   }
 }
 
+// Porto spaziale: recupera il 5% per livello (max 70%) delle navi perse difendendo un pianeta.
+function dockRepair(pl, res) {
+  const frac = Math.min(0.7, 0.05 * (pl.b.spaceDock || 0)), back = {};
+  if (frac <= 0) return back;
+  for (const [id, n] of Object.entries(res.d.lost)) {
+    if (DEFS[id].type !== 's') continue;
+    let k = 0; if (n < 400) { for (let i = 0; i < n; i++) if (Math.random() < frac) k++; } else k = Math.round(n * frac);
+    if (k > 0) { pl.ships[id] = (pl.ships[id] || 0) + k; back[id] = k; }
+  }
+  return back;
+}
 function raidArrive(r, t) {
   const att = npcAt(r.from);
   if (r.state === 'back') {
@@ -776,9 +814,10 @@ function raidArrive(r, t) {
     const pl = G.planets.find(p => p.id === r.pid);
     if (!pl) { res0(); return; }
     updateShipQueue(pl, t);
-    const defs = Object.assign({}, pl.defs), ipm = defs.ipm || 0; delete defs.ipm;
+    const defs = Object.assign({}, pl.defs), ipm = defs.ipm || 0, abm = defs.abm || 0; delete defs.ipm; delete defs.abm;
     const res = battle({ ships: r.ships, tech: att ? npcTech(att) : {} }, { ships: Object.assign({}, pl.ships), defs, tech: G.tech });
-    r.ships = res.a.after; pl.ships = res.d.afterShips; pl.defs = res.d.afterDefs; if (ipm) pl.defs.ipm = ipm;
+    r.ships = res.a.after; pl.ships = Object.assign({}, res.d.afterShips); pl.defs = res.d.afterDefs; if (ipm) pl.defs.ipm = ipm; if (abm) pl.defs.abm = abm;
+    res.d.docked = dockRepair(pl, res);
     let loot = [0, 0, 0];
     if (res.winner === 'a') { loot = calcLoot(pl.res, r.ships); for (let i = 0; i < 3; i++) pl.res[i] -= loot[i]; r.cargo = loot; }
     addDebris(r.to, res.debris, t);
@@ -834,19 +873,4 @@ function cheatNpc(points, g, s, p, style, skill) {
 function cheatFields(pl, total) {
   const bonus = 5 * (pl.b.terraformer || 0) + 3 * (pl.b.lunarBase || 0);
   pl.fields = Math.max(0, Math.floor(total) - bonus);
-}
-
-// Spia cheat: rapporto completo su un NPC, senza sonde e senza possibilità di perdita.
-function cheatSpyReport(npc) {
-  const th = npcTech(npc), label = `[${npc.g}:${npc.s}:${npc.p}]`;
-  const bank = npc.bank || [0, 0, 0];
-  let h = `<p><b>${npc.name}</b> ${label} — giocatore: ${npc.owner}</p>`;
-  h += `<p>Risorse attuali: ${fmtRes(npc.res.map(Math.floor))}</p>`;
-  h += `<p>Tesoro da investire: ${fmtRes(bank.map(Math.floor))}</p>`;
-  h += `<p>Strutture (miniere): produzione ${nf(Math.floor(npc.rate))} metallo/h (base ${nf(Math.floor(npc.rate0))}) · età ${npc.age.toFixed(1)} h</p>`;
-  h += `<p>Flotta: ${listUnits(npc.fleet)}</p><p>Difese: ${listUnits(npc.def)}</p>`;
-  h += `<p>Stile: ${NPC_STYLES[npc.style].name} — ${NPC_SKILLS[npc.skill].name}</p>`;
-  h += `<p>Ricerche: armi ${th.weapons}, scudi ${th.shield}, corazza ${th.armour}, spionaggio ${th.espionage}</p>`;
-  h += `<p>Punti ≈ ${nf(npcPoints(npc))} — Valore difensivo ≈ ${nf((stockValue(npc.fleet) + stockValue(npc.def)) / 1000)}k</p>`;
-  addMsg('espionage', `Spia cheat ${label} ${npc.owner}`, h);
 }

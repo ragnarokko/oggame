@@ -59,7 +59,7 @@ const ICON_MAP = {
   researchLab: ['flask', 260], nanite: ['dna', 280], terraformer: ['globe', 140], missileSilo: ['silo', 0], spaceDock: ['dock', 160], lunarBase: ['moon', 220], phalanx: ['radar', 190], jumpGate: ['portal', 270],
   energyTech: ['bolt', 50], laserTech: ['beam', 0], ionTech: ['orbit', 190], hyperspaceTech: ['spiral', 275], plasmaTech: ['flame', 20],
   combustion: ['thrust1', 25], impulse: ['thrust2', 200], hyperDrive: ['thrust3', 285], espionage: ['eye', 150], computerTech: ['chip', 190],
-  astro: ['star', 240], weapons: ['cross', 5], shield: ['shield', 205], armour: ['plate', 30],
+  astro: ['star', 240], intergalactic: ['globe', 250], gravitonTech: ['orbit', 300], weapons: ['cross', 5], shield: ['shield', 205], armour: ['plate', 30],
   smallCargo: ['cargoS', 200], largeCargo: ['cargoL', 210], lightFighter: ['dart', 190], heavyFighter: ['dartW', 195], cruiser: ['cruiserS', 205],
   battleship: ['bship', 215], colonyShip: ['colony', 140], recycler: ['recyc', 100], probe: ['probe', 160], bomber: ['bomber', 15],
   destroyer: ['destroyer', 280], battlecruiser: ['bcruiser', 240], deathstar: ['dstar', 220], reaper: ['destroyer', 345], pathfinder: ['cruiserS', 120], crawler: ['recyc', 35], solarSat: ['sat', 48],

@@ -41,6 +41,8 @@ def('t', 'hyperDrive', 'Propulsore iperspaziale', '🌌', [10000, 20000, 6000], 
 def('t', 'espionage', 'Tecnologia di spionaggio', '🕵️', [200, 1000, 200], 2, { researchLab: 3 }, { desc: 'Migliora le sonde: più informazioni nei rapporti.' });
 def('t', 'computerTech', 'Tecnologia informatica', '💻', [0, 400, 600], 2, { researchLab: 1 }, { desc: '+1 slot flotta per livello.' });
 def('t', 'astro', 'Astrofisica', '🔭', [4000, 8000, 4000], 1.75, { espionage: 4, impulse: 3 }, { desc: 'Permette di colonizzare più pianeti e inviare più spedizioni.' });
+def('t', 'intergalactic', 'Rete interplanetaria di ricerca', '🕸️', [240000, 400000, 160000], 2, { researchLab: 10, computerTech: 8, hyperspaceTech: 8 }, { desc: 'Collega i laboratori di più pianeti: la ricerca usa la somma dei loro livelli.' });
+def('t', 'gravitonTech', 'Tecnologia gravitonica', '🌀', [0, 0, 0], 3, { researchLab: 12 }, { energy: 300000, instant: true, maxLvl: 1, desc: 'Non costa risorse ma richiede 300.000 di energia disponibile sul pianeta. Livello unico: serve solo per la Morte Nera.' });
 def('t', 'weapons', 'Tecnologia delle armi', '🗡️', [800, 200, 0], 2, { researchLab: 4 }, { desc: '+10% attacco per livello.' });
 def('t', 'shield', 'Tecnologia degli scudi', '🛡️', [200, 600, 0], 2, { researchLab: 6, energyTech: 3 }, { desc: '+10% scudi per livello.' });
 def('t', 'armour', 'Tecnologia della corazza', '🧱', [1000, 0, 0], 2, { researchLab: 2 }, { desc: '+10% struttura per livello.' });
@@ -61,7 +63,7 @@ def('s', 'destroyer', 'Corazzata', '🛳️', [60000, 50000, 15000], 1, { shipya
 def('s', 'battlecruiser', 'Incrociatore da battaglia', '🦅', [30000, 40000, 15000], 1, { shipyard: 8, hyperDrive: 5, hyperspaceTech: 5, laserTech: 12 }, { atk: 700, shield: 400, speed: 10000, cap: 750, fuel: 250, drive: 'h', desc: 'Intercetta e distrugge le flotte di navi.' });
 def('s', 'reaper', 'Mietitrice', '🪓', [85000, 55000, 20000], 1, { shipyard: 10, hyperDrive: 6, shield: 6 }, { atk: 2800, shield: 700, speed: 7000, cap: 10000, fuel: 1100, drive: 'h', desc: 'Nave da guerra che raccoglie anche i detriti.' });
 def('s', 'pathfinder', 'Esploratore', '🧭', [8000, 15000, 8000], 1, { shipyard: 5, hyperDrive: 2, shield: 4 }, { atk: 200, shield: 100, speed: 12000, cap: 10000, fuel: 300, drive: 'h', desc: 'Veloce, con ampia stiva: ideale per le spedizioni.' });
-def('s', 'deathstar', 'Morte nera', '🌑', [5000000, 4000000, 1000000], 1, { shipyard: 12, hyperDrive: 7, hyperspaceTech: 6 }, { atk: 200000, shield: 50000, speed: 100, cap: 1000000, fuel: 1, drive: 'h', desc: 'L\'arma definitiva. Lentissima.' });
+def('s', 'deathstar', 'Morte nera', '🌑', [5000000, 4000000, 1000000], 1, { shipyard: 12, hyperDrive: 7, hyperspaceTech: 6, gravitonTech: 1 }, { atk: 200000, shield: 50000, speed: 100, cap: 1000000, fuel: 1, drive: 'h', desc: 'L\'arma definitiva. Lentissima.' });
 def('s', 'solarSat', 'Satellite solare', '🛰️', [0, 2000, 500], 1, { shipyard: 1 }, { atk: 1, shield: 1, speed: 0, cap: 0, fuel: 0, drive: 'c', noFly: true, desc: 'Produce energia in orbita (non si può inviare).' });
 
 def('s', 'crawler', 'Crawler', '🚜', [2000, 2000, 1000], 1, { shipyard: 5, combustion: 4, hyperspaceTech: 4 }, { atk: 1, shield: 1, speed: 0, cap: 0, fuel: 0, drive: 'c', noFly: true, where: 'p', desc: 'Veicolo minerario: aumenta la produzione delle miniere.' });
@@ -99,7 +101,7 @@ const NAMES = {
   researchLab: 'Laboratorio di ricerca', nanite: 'Fabbrica di naniti', terraformer: 'Terraformer', missileSilo: 'Silo missilistico', spaceDock: 'Porto spaziale', lunarBase: 'Base lunare', phalanx: 'Sensore Phalanx', jumpGate: 'Portale spaziale',
   energyTech: 'Tecnologia Energetica', laserTech: 'Tecnologia Laser', ionTech: 'Tecnologia Ionica', hyperspaceTech: 'Tecnologia Iperspaziale', plasmaTech: 'Tecnologia Plasma',
   combustion: 'Propulsore a combustione', impulse: 'Propulsore a impulso', hyperDrive: 'Propulsore Iperspaziale', espionage: 'Tecnologia Spionaggio', computerTech: 'Tecnologia Computer',
-  astro: 'Astrofisica', weapons: 'Tecnologia Armi', shield: 'Tecnologia Scudo', armour: 'Tecnologia Corazza',
+  astro: 'Astrofisica', intergalactic: 'Rete interplanetaria di ricerca', gravitonTech: 'Tecnologia Gravitonica', weapons: 'Tecnologia Armi', shield: 'Tecnologia Scudo', armour: 'Tecnologia Corazza',
   smallCargo: 'Cargo leggero', largeCargo: 'Cargo pesante', lightFighter: 'Caccia leggero', heavyFighter: 'Caccia pesante', cruiser: 'Incrociatore', battleship: 'Nave da battaglia',
   colonyShip: 'Colonizzatrice', recycler: 'Riciclatrice', probe: 'Sonda spia', bomber: 'Bombardiere', destroyer: 'Corazzata', battlecruiser: 'Incrociatore da battaglia', deathstar: 'Morte Nera', reaper: 'Mietitrice', pathfinder: 'Esploratore', crawler: 'Crawler', solarSat: 'Satellite solare',
   rocket: 'Lanciamissili', lightLaser: 'Laser leggero', heavyLaser: 'Laser pesante', gauss: 'Cannone di Gauss', ion: 'Cannone a ioni', plasma: 'Cannone al plasma', smallDome: 'Cupola scudo piccola', largeDome: 'Cupola scudo grande', ipm: 'Missile interplanetario', abm: 'Missile anti-balistico',

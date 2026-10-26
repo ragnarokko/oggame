@@ -20,9 +20,14 @@ function mulberry32(a) { return function () { a |= 0; a = a + 0x6D2B79F5 | 0; le
 const lvlOf = (pl, id) => DEFS[id].type === 'b' ? (pl.b[id] || 0) : (G.tech[id] || 0);
 function costOf(id, level) { const d = DEFS[id]; const m = Math.pow(d.f, level - 1); return d.cost.map(c => Math.floor(c * m)); }
 const resTotal = c => c[0] + c[1];
-const labLevel = () => Math.max(0, ...G.planets.map(p => p.b.researchLab || 0));
+// Rete interplanetaria di ricerca: con livello N si sommano i N+1 laboratori più alti.
+const labLevel = () => G.planets.map(p => p.b.researchLab || 0).sort((a, b) => b - a).slice(0, (G.tech.intergalactic || 0) + 1).reduce((a, b) => a + b, 0);
 function buildTime(pl, id, level) { const c = costOf(id, level); return resTotal(c) / (2500 * (1 + (pl.b.robotics || 0)) * Math.pow(2, pl.b.nanite || 0)) / G.speed * HOUR; }
-function researchTime(id, level) { const c = costOf(id, level); return resTotal(c) / (1000 * (1 + labLevel())) / G.speed * HOUR; }
+// Ricerche che non costano risorse ma richiedono energia disponibile sul pianeta (es. gravitonica).
+const energyNeed = (id, level) => DEFS[id].energy ? DEFS[id].energy * Math.pow(DEFS[id].f, level - 1) : 0;
+const energyFree = pl => { const p = calcProd(pl); return Math.floor(p.energyProd - p.energyUse); };
+const canResearch = (pl, id, level) => canAfford(pl, costOf(id, level)) && energyFree(pl) >= energyNeed(id, level);
+function researchTime(id, level) { if (DEFS[id].instant) return 1000; const c = costOf(id, level); const rt = resTotal(c) || (DEFS[id].timeBase || 0) * Math.pow(DEFS[id].f, level - 1); return rt / (1000 * (1 + labLevel())) / G.speed * HOUR; }
 function unitTime(pl, id) { const c = DEFS[id].cost; return Math.max(1000, resTotal(c) / (5000 * (1 + (pl.b.shipyard || 0)) * Math.pow(2, pl.b.nanite || 0)) / G.speed * HOUR); }
 const storageCap = l => 5000 * Math.floor(2.5 * Math.exp(20 * l / 33));
 const capacities = pl => [storageCap(pl.b.metalStorage || 0), storageCap(pl.b.crystalStorage || 0), storageCap(pl.b.deutTank || 0)];
@@ -306,7 +311,9 @@ function startResearch(pl, id) {
   if (G.researchQ) return 'Una ricerca è già in corso.';
   if (!meets(pl, id)) return 'Requisiti mancanti.';
   const lvl = (G.tech[id] || 0) + 1, c = costOf(id, lvl);
+  if (DEFS[id].maxLvl && lvl > DEFS[id].maxLvl) return 'Livello massimo raggiunto.';
   if (!canAfford(pl, c)) return 'Risorse insufficienti.';
+  if (energyFree(pl) < energyNeed(id, lvl)) return `Energia insufficiente: servono ${nf(energyNeed(id, lvl))} (disponibile ${nf(Math.max(0, energyFree(pl)))}).`;
   pay(pl, c); const now = T();
   G.researchQ = { id, level: lvl, cost: c, planet: pl.id, start: now, end: now + researchTime(id, lvl) };
   return null;

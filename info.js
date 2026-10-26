@@ -30,6 +30,8 @@ const LONG = {
   espionage: 'Si tratta soprattutto di sensori di nuova generazione. Più alto è il livello, più informazioni portano le sonde spia. Il confronto con il livello dell’avversario determina quante informazioni si ottengono e il rischio di essere scoperti.',
   computerTech: 'Computer più potenti coordinano meglio le flotte: ogni livello aggiunge uno slot di flotta, cioè una missione in più contemporaneamente.',
   astro: 'Con l’astrofisica le navi possono compiere spedizioni verso regioni sconosciute. Ogni due livelli si può colonizzare un pianeta in più e organizzare una spedizione in più.',
+  intergalactic: 'La rete di ricerca interplanetaria collega i laboratori di pianeti diversi in un’unica rete di calcolo. Con livello N la ricerca usa la somma dei livelli dei N+1 laboratori più alti dei tuoi pianeti, e le ricerche diventano molto più rapide.',
+  gravitonTech: 'Con la tecnologia gravitonica si generano e si manipolano campi gravitazionali artificiali. Non costa risorse: basta avere almeno 300.000 di energia disponibile sul pianeta da cui parte la ricerca. Esiste solo il livello 1, e per ora serve unicamente a sbloccare la Morte Nera.',
   weapons: 'La tecnologia delle armi rende le armi più efficaci: ogni livello aumenta il valore d’attacco di tutte le unità del 10%.',
   shield: 'La tecnologia degli scudi usa generatori di campo per proteggere navi e difese: ogni livello aumenta il valore di scudo di tutte le unità del 10%.',
   armour: 'Leghe speciali rendono più resistenti gli scafi: ogni livello aumenta del 10% la struttura di tutte le navi e difese.',
@@ -79,6 +81,7 @@ const USES = {
   hyperDrive: '+30% velocità alle navi iperspaziali.', espionage: 'Rapporti di spionaggio più dettagliati.', computerTech: '+1 slot flotta.', astro: 'Più colonie e spedizioni.',
   reaper: 'Raccoglie detriti (capacità 10.000); fuoco rapido contro navi pesanti.', pathfinder: 'Spedizioni: +2% risorse trovate per nave (max +100%).', crawler: '+0,02% produzione miniere (max +50%).',
   abm: 'Intercetta un missile interplanetario nemico ciascuno.',
+  intergalactic: 'Ricerche più rapide: somma dei N+1 laboratori più alti.', gravitonTech: 'Livello unico: sblocca la Morte Nera.',
   weapons: '+10% attacco.', shield: '+10% scudi.', armour: '+10% struttura.',
 };
 

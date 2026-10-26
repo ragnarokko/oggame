@@ -67,7 +67,8 @@ function tileState(id, pl) {
   const d = DEFS[id];
   if (!meets(pl, id)) return 'locked';
   if ((d.type === 'b' && pl.buildQ && pl.buildQ.id === id) || (d.type === 't' && G.researchQ && G.researchQ.id === id)) return 'busy';
-  if (d.type === 'b' || d.type === 't') return canAfford(pl, costOf(id, lvlOf(pl, id) + 1)) && !(d.type === 'b' ? pl.buildQ : G.researchQ) ? 'can' : 'cant';
+  if (d.maxLvl && lvlOf(pl, id) >= d.maxLvl) return 'cant';
+  if (d.type === 'b' || d.type === 't') return canAfford(pl, costOf(id, lvlOf(pl, id) + 1)) && (d.type === 'b' || energyFree(pl) >= energyNeed(id, lvlOf(pl, id) + 1)) && !(d.type === 'b' ? pl.buildQ : G.researchQ) ? 'can' : 'cant';
   return canAfford(pl, d.cost) ? 'can' : 'cant';
 }
 function haveOf(id, pl) { const t = DEFS[id].type; return t === 'd' ? pl.defs[id] || 0 : t === 's' ? pl.ships[id] || 0 : lvlOf(pl, id); }
@@ -94,9 +95,9 @@ function detail(id, pl) {
   if (!ok) return h + `<p class="req">Requisiti: ${reqText(pl, id)}</p></div></div>`;
   if (!isUnit) {
     const lvl = n, c = costOf(id, lvl + 1), t = d.type === 'b' ? buildTime(pl, id, lvl + 1) : researchTime(id, lvl + 1);
-    const busy = d.type === 'b' ? pl.buildQ : G.researchQ, can = canAfford(pl, c) && !busy;
-    h += effectText(id, pl, lvl) + costItems(c, pl) + `<div>Durata: <b style="color:var(--hi)">${dur(t)}</b></div>`;
-    h += `<div class="actions"><button ${can ? '' : 'disabled'} onclick="act.${d.type === 'b' ? 'build' : 'research'}('${id}')">${lvl ? 'Potenzia al livello ' + (lvl + 1) : 'Costruisci'}</button>${busy && !can && canAfford(pl, c) ? '<span class="muted">Coda occupata</span>' : ''}</div>`;
+    const busy = d.type === 'b' ? pl.buildQ : G.researchQ, en = energyNeed(id, lvl + 1), enOk = d.type !== 't' || energyFree(pl) >= en, maxed = d.maxLvl && lvl >= d.maxLvl, can = canAfford(pl, c) && enOk && !busy && !maxed;
+    h += effectText(id, pl, lvl) + (en ? `<div>Energia richiesta: <b class="${enOk ? 'ok' : 'bad'}">${nf(en)}</b> <span class="muted">(disponibile su ${pl.name}: ${nf(Math.max(0, energyFree(pl)))}; non viene spesa)</span></div>` : costItems(c, pl)) + `<div>Durata: <b style="color:var(--hi)">${dur(t)}</b></div>`;
+    h += `<div class="actions"><button ${can ? '' : 'disabled'} onclick="act.${d.type === 'b' ? 'build' : 'research'}('${id}')">${maxed ? 'Livello massimo' : lvl ? 'Potenzia al livello ' + (lvl + 1) : d.type === 't' ? 'Ricerca' : 'Costruisci'}</button>${busy && !can && canAfford(pl, c) ? '<span class="muted">Coda occupata</span>' : ''}</div>`;
   } else {
     h += costItems(d.cost, pl) + `<div>Durata per unità: <b style="color:var(--hi)">${dur(unitTime(pl, id))}</b></div>`;
     h += `<div class="actions"><input type="number" min="1" id="q_${id}" value="1"> <button class="mini" onclick="act.maxUnits('${id}')">max</button><button onclick="act.units('${id}')">Costruisci</button></div>`;

@@ -1,0 +1,40 @@
+<!doctype html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Orbita — gioco di strategia spaziale</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div id="start" hidden>
+  <div class="panel startbox">
+    <h2 class="ph">Nuovo universo</h2>
+    <div class="pb">
+      <h1>ORBITA</h1>
+      <p>Gioco di strategia spaziale in solitaria a turni: a ogni turno costruisci, ricerca e comanda flotte, poi premi Fine turno e i rivali controllati dal computer giocano il loro.</p>
+      <label>Nome comandante <input id="pname" value="Comandante"></label>
+      <label>Velocità universo
+        <select id="pspeed"><option value="1" selected>×1 (ritmo originale)</option><option value="10">×10</option><option value="50">×50</option><option value="100">×100</option><option value="500">×500</option></select>
+      </label>
+      <label>Durata di un turno
+        <select id="pturn"><option value="1">1 minuto di universo</option><option value="5" selected>5 minuti</option><option value="15">15 minuti</option><option value="30">30 minuti</option><option value="60">1 ora</option><option value="240">4 ore</option><option value="720">12 ore</option><option value="1440">24 ore</option></select>
+      </label>
+      <label>Numero di avversari NPC (stile e abilità casuali) <input id="pnpc" type="number" min="0" max="400" value="150"></label>
+      <button onclick="startNew()">Inizia</button>
+    </div>
+  </div>
+</div>
+<div id="app" hidden>
+  <header id="top"><div class="brand">ORBITA<small>strategia spaziale</small></div><span id="alert"></span><span id="pausebar"></span><div id="resbar"></div><button id="cheatbtn" class="cheatbtn" onclick="go('cheat')">Cheat</button></header>
+  <div id="layout"><nav id="nav"></nav><main id="main"></main><aside id="planets"></aside></div>
+</div>
+<div id="toast"></div>
+<input type="file" id="loadfile" accept=".json,application/json" hidden onchange="loadFile(this)">
+<script src="data.js"></script>
+<script src="info.js"></script>
+<script src="icons.js"></script>
+<script src="engine.js"></script>
+<script src="ui.js"></script>
+</body>
+</html>

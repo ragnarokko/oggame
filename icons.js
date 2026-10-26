@@ -1,0 +1,82 @@
+// Icone SVG originali (stile "tecnologico" scuro) generate per ogni voce; si possono sostituire con immagini proprie in img/<id>.png|jpg
+const SH = {
+  mine: () => `<path d="M16 80h68l-10-28H26z"/><path d="M32 52l18-32 18 32"/><path d="M50 20V10M42 80V62h16v18"/>`,
+  crystal: () => `<path d="M50 12l24 24-24 52-24-52z"/><path d="M26 36h48M50 12v76M38 36l12 52M62 36L50 88"/>`,
+  drop: () => `<path d="M50 12C40 28 24 44 24 62a26 26 0 0052 0C76 44 60 28 50 12z"/><path d="M38 64a12 12 0 0010 11"/>`,
+  sun: () => `<circle cx="50" cy="50" r="17"/>` + [0, 45, 90, 135, 180, 225, 270, 315].map(a => `<path d="M50 22V10" transform="rotate(${a} 50 50)"/>`).join(''),
+  atom: () => `<ellipse cx="50" cy="50" rx="38" ry="14"/><ellipse cx="50" cy="50" rx="38" ry="14" transform="rotate(60 50 50)"/><ellipse cx="50" cy="50" rx="38" ry="14" transform="rotate(120 50 50)"/><circle cx="50" cy="50" r="6"/>`,
+  tank: () => `<path d="M24 28v46c0 7 12 12 26 12s26-5 26-12V28"/><ellipse cx="50" cy="28" rx="26" ry="10"/><path d="M24 50c0 7 12 12 26 12s26-5 26-12"/>`,
+  crate: () => `<path d="M20 34l30-14 30 14v36L50 84 20 70z"/><path d="M20 34l30 14 30-14M50 48v36"/>`,
+  robot: () => `<rect x="24" y="30" width="52" height="40" rx="8"/><circle cx="40" cy="48" r="6"/><circle cx="60" cy="48" r="6"/><path d="M50 30V16M40 78h20M36 70v8M64 70v8"/>`,
+  dock: () => `<path d="M14 80V46L50 20l36 26v34z"/><path d="M34 80V56h32v24M40 56v24M50 56v24M60 56v24"/>`,
+  flask: () => `<path d="M40 14h20M44 14v26L22 78a6 6 0 005 9h46a6 6 0 005-9L56 40V14"/><path d="M32 62h36"/>`,
+  dna: () => `<path d="M32 14c0 24 36 24 36 36s-36 12-36 36"/><path d="M68 14c0 24-36 24-36 36s36 12 36 36"/><path d="M38 28h24M38 72h24M34 50h32"/>`,
+  globe: () => `<circle cx="50" cy="50" r="32"/><ellipse cx="50" cy="50" rx="14" ry="32"/><path d="M18 50h64M24 32h52M24 68h52"/>`,
+  silo: () => `<path d="M50 10c10 10 12 26 12 40v22H38V50c0-14 2-30 12-40z"/><path d="M38 60L26 76l12-4M62 60l12 16-12-4M44 72v14M56 72v14"/><circle cx="50" cy="40" r="5"/>`,
+  moon: () => `<path d="M62 14a38 38 0 100 72A30 30 0 0162 14z"/>`,
+  radar: () => `<path d="M20 80h60M50 80V52"/><path d="M28 62a30 30 0 0144 0"/><path d="M18 50a46 46 0 0164 0"/><circle cx="50" cy="50" r="5"/>`,
+  portal: () => `<ellipse cx="50" cy="50" rx="34" ry="38"/><ellipse cx="50" cy="50" rx="22" ry="26"/><ellipse cx="50" cy="50" rx="10" ry="14"/>`,
+  bolt: () => `<path d="M58 10L26 54h22l-6 36 32-46H52z"/>`,
+  beam: () => `<path d="M16 84L70 30"/><circle cx="76" cy="24" r="10"/><path d="M22 70l8 8M34 58l8 8M82 40l8-4M86 16l6-6M62 12V4"/>`,
+  orbit: () => `<ellipse cx="50" cy="50" rx="38" ry="16" transform="rotate(-30 50 50)"/><circle cx="50" cy="50" r="10"/><circle cx="78" cy="34" r="4"/>`,
+  spiral: () => `<path d="M50 50c0-5 8-5 8 0s-12 8-14-2-4-18 12-18 24 14 18 28S42 82 28 70 14 34 36 22s44 6 40 30"/>`,
+  flame: () => `<path d="M50 10c4 16 22 24 22 46a22 22 0 01-44 0c0-12 6-18 10-26 2 8 6 10 8 10 0-10-2-18 4-30z"/><path d="M50 84c-6 0-10-5-10-10 0-8 10-12 10-22 6 6 10 14 10 22 0 5-4 10-10 10z"/>`,
+  thrust1: () => `<path d="M26 22h48l-8 34H34z"/><path d="M50 62v24"/>`,
+  thrust2: () => `<path d="M26 22h48l-8 34H34z"/><path d="M42 62v22M58 62v22"/>`,
+  thrust3: () => `<path d="M26 22h48l-8 34H34z"/><path d="M38 62v18M50 62v26M62 62v18"/>`,
+  eye: () => `<path d="M10 50C26 26 74 26 90 50 74 74 26 74 10 50z"/><circle cx="50" cy="50" r="12"/><circle cx="50" cy="50" r="4"/>`,
+  chip: () => `<rect x="28" y="28" width="44" height="44" rx="4"/><rect x="40" y="40" width="20" height="20"/><path d="M38 28V16M50 28V16M62 28V16M38 72v12M50 72v12M62 72v12M28 38H16M28 50H16M28 62H16M72 38h12M72 50h12M72 62h12"/>`,
+  star: () => `<path d="M50 10l12 28 30 3-23 20 7 30-26-16-26 16 7-30L8 41l30-3z"/>`,
+  cross: () => `<circle cx="50" cy="50" r="28"/><path d="M50 12v24M50 64v24M12 50h24M64 50h24"/><circle cx="50" cy="50" r="4"/>`,
+  shield: () => `<path d="M50 10l34 12v26c0 20-14 34-34 42C30 82 16 68 16 48V22z"/><path d="M50 24v56"/>`,
+  plate: () => `<path d="M16 34l34-16 34 16-34 16z"/><path d="M16 50l34 16 34-16M16 66l34 16 34-16"/>`,
+  dart: () => `<path d="M50 12l16 52-16-10-16 10z"/><path d="M50 20v30M34 64l-10 12M66 64l10 12"/>`,
+  dartW: () => `<path d="M50 12l22 44 14 20-36-12-36 12 14-20z"/><path d="M50 24v34"/>`,
+  cargoS: () => `<path d="M34 24h32l6 50H28z"/><path d="M40 24l-6-10h32l-6 10M38 40h24M36 56h28"/>`,
+  cargoL: () => `<path d="M30 14h40l8 62H22z"/><path d="M30 34h40M28 52h44M22 76l-8 8M78 76l8 8"/>`,
+  cruiserS: () => `<path d="M50 8l12 20 6 44-18 10-18-10 6-44z"/><path d="M50 28v44M32 52l-14 14M68 52l14 14"/>`,
+  bship: () => `<path d="M50 6l14 18 8 20 10 32-12 6-20-6-20 6-12-6 10-32 8-20z"/><path d="M50 24v46M36 44h28M24 62l-6 14M76 62l6 14"/>`,
+  colony: () => `<path d="M50 14l18 26v34H32V40z"/><circle cx="50" cy="52" r="10"/><path d="M32 66l-12 10M68 66l12 10"/>`,
+  recyc: () => `<path d="M32 22h36l8 42H24z"/><path d="M36 76a16 16 0 0128 0M60 70l5 8-9 1M40 40h20"/>`,
+  probe: () => `<circle cx="50" cy="50" r="12"/><path d="M50 38V16M50 62v22M38 50H16M62 50h22"/><circle cx="50" cy="50" r="4"/>`,
+  bomber: () => `<path d="M50 10l10 22 28 34-26-4-12 14-12-14-26 4 28-34z"/><path d="M50 32v34"/>`,
+  destroyer: () => `<path d="M50 6l22 16 12 42-18 14H34L16 64l12-42z"/><path d="M50 24v50M34 40h32M30 60h40"/>`,
+  bcruiser: () => `<path d="M50 8l10 14 24 26-6 24-16 4-12 10-12-10-16-4-6-24 24-26z"/><path d="M50 22v48M30 48h40"/>`,
+  dstar: () => `<circle cx="50" cy="50" r="34"/><circle cx="38" cy="38" r="9"/><path d="M16 56h68M20 66c20 8 40 8 60 0"/>`,
+  sat: () => `<rect x="42" y="38" width="16" height="24"/><path d="M14 40h24v20H14zM62 40h24v20H62z"/><path d="M26 40v20M74 40v20M50 38V26M50 62v12"/>`,
+  launcher: () => `<path d="M20 78h60M30 78V62l30-30 8 8-30 30v8"/><path d="M62 28l12-12M68 40l12-12"/>`,
+  laser: () => `<path d="M24 80h52M34 80V60h32v20M42 60V40l28-18"/><path d="M70 22l12-8"/><circle cx="42" cy="40" r="6"/>`,
+  gauss: () => `<path d="M22 80h56M32 80V64h36v16M40 64V48l36-30"/><path d="M44 52l10 8M54 40l10 8"/>`,
+  ionC: () => `<path d="M24 80h52M34 80V58h32v22"/><circle cx="50" cy="42" r="16"/><circle cx="50" cy="42" r="6"/><path d="M50 26V10"/>`,
+  plasmaC: () => `<path d="M22 80h56M30 80V62h40v18"/><circle cx="50" cy="40" r="20"/><path d="M50 20c-8 10 8 14 0 22M38 36c10 0 14 10 24 8"/>`,
+  domeS: () => `<path d="M16 76a34 34 0 0168 0z"/><path d="M26 76a24 24 0 0148 0"/>`,
+  domeL: () => `<path d="M10 80a40 40 0 0180 0z"/><path d="M22 80a28 28 0 0156 0M34 80a16 16 0 0132 0"/>`,
+  ipmS: () => `<g transform="rotate(45 50 50)">${SH.silo()}</g>`,
+};
+const ICON_MAP = {
+  metalMine: ['mine', 28], crystalMine: ['crystal', 200], deutSynth: ['drop', 170], solarPlant: ['sun', 48], fusionPlant: ['atom', 30],
+  metalStorage: ['crate', 28], crystalStorage: ['crate', 200], deutTank: ['tank', 170], robotics: ['robot', 210], shipyard: ['dock', 215],
+  researchLab: ['flask', 260], nanite: ['dna', 280], terraformer: ['globe', 140], missileSilo: ['silo', 0], lunarBase: ['moon', 220], phalanx: ['radar', 190], jumpGate: ['portal', 270],
+  energyTech: ['bolt', 50], laserTech: ['beam', 0], ionTech: ['orbit', 190], hyperspaceTech: ['spiral', 275], plasmaTech: ['flame', 20],
+  combustion: ['thrust1', 25], impulse: ['thrust2', 200], hyperDrive: ['thrust3', 285], espionage: ['eye', 150], computerTech: ['chip', 190],
+  astro: ['star', 240], weapons: ['cross', 5], shield: ['shield', 205], armour: ['plate', 30],
+  smallCargo: ['cargoS', 200], largeCargo: ['cargoL', 210], lightFighter: ['dart', 190], heavyFighter: ['dartW', 195], cruiser: ['cruiserS', 205],
+  battleship: ['bship', 215], colonyShip: ['colony', 140], recycler: ['recyc', 100], probe: ['probe', 160], bomber: ['bomber', 15],
+  destroyer: ['destroyer', 280], battlecruiser: ['bcruiser', 240], deathstar: ['dstar', 220], solarSat: ['sat', 48],
+  rocket: ['launcher', 20], lightLaser: ['laser', 10], heavyLaser: ['laser', 335], gauss: ['gauss', 200], ion: ['ionC', 185], plasma: ['plasmaC', 140],
+  smallDome: ['domeS', 190], largeDome: ['domeL', 210], ipm: ['ipmS', 0],
+};
+function svgIcon(id) {
+  const [shape, h] = ICON_MAP[id] || ['crate', 210];
+  return `<svg viewBox="0 0 100 100" class="isvg" preserveAspectRatio="xMidYMid slice"><defs><radialGradient id="g${id}" cx="50%" cy="30%" r="80%"><stop offset="0" stop-color="hsl(${h},55%,30%)"/><stop offset="1" stop-color="hsl(${h},50%,7%)"/></radialGradient></defs>` +
+    `<rect width="100" height="100" fill="url(#g${id})"/><g fill="hsla(${h},85%,62%,.22)" stroke="hsl(${h},90%,72%)" stroke-width="2.4" stroke-linejoin="round" stroke-linecap="round">${SH[shape]()}</g></svg>`;
+}
+// Se in img/ esiste un file con l'id (png, jpg o svg) viene mostrato sopra l'icona SVG.
+function imgErr(el) { if (el.src.endsWith('.png')) el.src = el.src.replace(/\.png$/, '.jpg'); else if (el.src.endsWith('.jpg')) el.src = el.src.replace(/.jpg$/, '.svg'); else el.style.display = 'none'; }
+const icon = (id, cls) => `<span class="ico ${cls || ''}">${svgIcon(id)}<img src="img/${id}.png" onerror="imgErr(this)" alt=""></span>`;
+const RES_ICON = {
+  m: `<svg viewBox="0 0 24 24" class="ri"><path d="M4 16l3-8h10l3 8z" fill="#c9a66b" stroke="#f0d9a8" stroke-width="1.3"/><path d="M7 8l2-3h6l2 3" fill="none" stroke="#f0d9a8" stroke-width="1.3"/></svg>`,
+  c: `<svg viewBox="0 0 24 24" class="ri"><path d="M12 3l6 6-6 12-6-12z" fill="#4aa8e8" stroke="#a9dcff" stroke-width="1.3"/><path d="M6 9h12" stroke="#a9dcff" stroke-width="1.1"/></svg>`,
+  d: `<svg viewBox="0 0 24 24" class="ri"><path d="M12 3C9 8 6 11 6 15a6 6 0 0012 0c0-4-3-7-6-12z" fill="#3fbf9a" stroke="#9ff0d4" stroke-width="1.3"/></svg>`,
+  e: `<svg viewBox="0 0 24 24" class="ri"><path d="M14 2L5 14h6l-2 8 10-13h-6z" fill="#f2c94c" stroke="#fff0a8" stroke-width="1.2"/></svg>`,
+};

@@ -1,0 +1,1 @@
+cd D:\Claude\ogame; python -m http.server 8765

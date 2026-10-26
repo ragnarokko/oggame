@@ -197,7 +197,7 @@ function occupant(g, s, p, moon) {
 
 const defaultOpts = () => ({ npcGrowth: 1, npcAggr: 2, hitPlayer: true, hitNpc: true, protect: true });
 function newGame(name, speed, turnLen, npcCount) {
-  G = { v: 2, name, speed, clock: 0, turn: 1, turnMs: (turnLen || 1) * HOUR, t: 0, tech: {}, planets: [], npcs: [], fleets: [], missiles: [], raids: [], news: [], cheat: { fleetMult: 1 }, opts: defaultOpts(), debris: {}, messages: [], researchQ: null, nextId: 1, nextFleet: 1, cur: 0, unread: 0 };
+  G = { v: 2, name, speed, clock: 0, turn: 1, turnMs: (turnLen || 1) * HOUR, t: 0, tech: {}, planets: [], npcs: [], fleets: [], missiles: [], raids: [], news: [], cheat: { fleetMult: 1, spy: false }, opts: defaultOpts(), debris: {}, messages: [], researchQ: null, nextId: 1, nextFleet: 1, cur: 0, unread: 0 };
   const homeG = 1, homeS = rint(10, 20), homeP = rint(6, 9);
   const free = [];
   for (let g = 1; g <= GALAXIES; g++) for (let s = 1; s <= SYSTEMS; s++) for (let p = 1; p <= SLOTS; p++)
@@ -221,7 +221,7 @@ function addMsg(type, title, body, time) {
 function save() { try { localStorage.setItem(SAVE_KEY, JSON.stringify(G)); } catch (e) { } }
 function normalize(o) {
   o.missiles = o.missiles || []; o.raids = o.raids || []; o.news = o.news || [];
-  o.opts = Object.assign(defaultOpts(), o.opts || {}); o.cheat = Object.assign({ fleetMult: 1 }, o.cheat || {});
+  o.opts = Object.assign(defaultOpts(), o.opts || {}); o.cheat = Object.assign({ fleetMult: 1, spy: false }, o.cheat || {});
   // Salvataggi a tempo reale: l'istante dell'ultimo aggiornamento diventa l'inizio del turno 1.
   if (o.clock == null) o.clock = o.t || 0;
   o.turn = o.turn || 1; o.turnMs = o.turnMs || HOUR;
@@ -834,4 +834,19 @@ function cheatNpc(points, g, s, p, style, skill) {
 function cheatFields(pl, total) {
   const bonus = 5 * (pl.b.terraformer || 0) + 3 * (pl.b.lunarBase || 0);
   pl.fields = Math.max(0, Math.floor(total) - bonus);
+}
+
+// Spia cheat: rapporto completo su un NPC, senza sonde e senza possibilità di perdita.
+function cheatSpyReport(npc) {
+  const th = npcTech(npc), label = `[${npc.g}:${npc.s}:${npc.p}]`;
+  const bank = npc.bank || [0, 0, 0];
+  let h = `<p><b>${npc.name}</b> ${label} — giocatore: ${npc.owner}</p>`;
+  h += `<p>Risorse attuali: ${fmtRes(npc.res.map(Math.floor))}</p>`;
+  h += `<p>Tesoro da investire: ${fmtRes(bank.map(Math.floor))}</p>`;
+  h += `<p>Strutture (miniere): produzione ${nf(Math.floor(npc.rate))} metallo/h (base ${nf(Math.floor(npc.rate0))}) · età ${npc.age.toFixed(1)} h</p>`;
+  h += `<p>Flotta: ${listUnits(npc.fleet)}</p><p>Difese: ${listUnits(npc.def)}</p>`;
+  h += `<p>Stile: ${NPC_STYLES[npc.style].name} — ${NPC_SKILLS[npc.skill].name}</p>`;
+  h += `<p>Ricerche: armi ${th.weapons}, scudi ${th.shield}, corazza ${th.armour}, spionaggio ${th.espionage}</p>`;
+  h += `<p>Punti ≈ ${nf(npcPoints(npc))} — Valore difensivo ≈ ${nf((stockValue(npc.fleet) + stockValue(npc.def)) / 1000)}k</p>`;
+  addMsg('espionage', `Spia cheat ${label} ${npc.owner}`, h);
 }

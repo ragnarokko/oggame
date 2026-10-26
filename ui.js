@@ -252,13 +252,23 @@ function vGalaxy() {
     const occ = occupant(g, s, p), deb = G.debris[coordKey(g, s, p)];
     let name = '<span class="muted">—</span>', who = '', acts = '';
     if (occ && occ.type === 'player') { name = occ.planet.name + (G.planets.some(m => m.moon && m.g === g && m.s === s && m.p === p) ? ' 🌙' : ''); who = `<b>${G.name}</b>`; }
-    else if (occ) { name = occ.npc.name; who = occ.npc.owner; acts = `<button class="mini" onclick="spy(${g},${s},${p})">Spia</button> <button class="mini" onclick="fleetTo(${g},${s},${p},'attack')">Attacca</button>` + (hasIpm && g === pl.g && Math.abs(s - pl.s) <= missileRange() ? ` <button class="mini" onclick="fireIPM(${g},${s},${p})">IPM</button>` : '') + (hasPh && g === pl.g && Math.abs(s - pl.s) <= phalanxRange(pl) ? ` <button class="mini" onclick="phalanxScan(${g},${s},${p})">Scansiona</button>` : ''); }
+    else if (occ) { name = occ.npc.name; who = occ.npc.owner; acts = `<button class="mini" onclick="spy(${g},${s},${p})">Spia</button> ${G.cheat.spy ? `<button class="mini on" onclick="cheatSpy(${g},${s},${p})">Spia cheat</button> ` : ''}<button class="mini" onclick="fleetTo(${g},${s},${p},'attack')">Attacca</button>` + (hasIpm && g === pl.g && Math.abs(s - pl.s) <= missileRange() ? ` <button class="mini" onclick="fireIPM(${g},${s},${p})">IPM</button>` : '') + (hasPh && g === pl.g && Math.abs(s - pl.s) <= phalanxRange(pl) ? ` <button class="mini" onclick="phalanxScan(${g},${s},${p})">Scansiona</button>` : ''); }
     else acts = `<button class="mini" onclick="fleetTo(${g},${s},${p},'colonize',{colonyShip:Math.min(1,cur().ships.colonyShip||0)})">Colonizza</button>`;
     if (deb) acts += ` <button class="mini" onclick="fleetTo(${g},${s},${p},'recycle',{recycler:Math.min(cur().ships.recycler||0,${Math.ceil((deb[0] + deb[1]) / DEFS.recycler.cap)})})">Ricicla</button>`;
     t += `<tr class="${occ && occ.type === 'player' ? 'mine' : ''}"><td>${p}</td><td>${name}</td><td>${who}</td><td>${deb ? `<span class="rm">${nf(deb[0])}</span> <span class="rc">${nf(deb[1])}</span>` : ''}</td><td>${acts}</td></tr>`;
   }
   t += `<tr><td>16</td><td colspan="3" class="muted">Spazio profondo</td><td><button class="mini" onclick="fleetTo(${g},${s},16,'expedition')">Spedizione</button></td></tr></table>`;
   return panel(`Galassia ${g}:${s}`, h + '<div style="height:10px"></div>' + t);
+}
+function cheatSpy(g, s, p) {
+  const occ = occupant(g, s, p); if (!occ || occ.type !== 'npc') return;
+  cheatSpyReport(occ.npc); toast('Rapporto spia cheat nei messaggi.'); go('messages'); save();
+}
+function cheatSearch() {
+  const q = ($('#cq').value || '').trim().toLowerCase(); if (!q) return toast('Inserisci un nome utente.', true);
+  const found = G.npcs.filter(n => n.owner.toLowerCase().includes(q)).slice(0, 10);
+  if (!found.length) return toast('Nessun giocatore trovato.', true);
+  found.forEach(cheatSpyReport); toast(`${found.length} rapporti nei messaggi.`); go('messages'); save();
 }
 function spy(g, s, p) {
   const err = launch(cur(), { probe: spyN }, { g, s, p }, 'espionage', 100, [0, 0, 0]);
@@ -398,6 +408,9 @@ function vCheat() {
       <p>${mins.map(v => `<button class="mini" onclick="cheatDo('time',${v},'b')">−${nf(v)} ${v === 1 ? 'turno' : 'turni'}</button>`).join(' ')}</p>`) +
     panel('Tempo di ricerca', `<p class="note">Toglie tempo alla ricerca in corso (turni).</p>
       <p>${mins.map(v => `<button class="mini" onclick="cheatDo('time',${v},'t')">−${nf(v)} ${v === 1 ? 'turno' : 'turni'}</button>`).join(' ')}</p>`) +
+    panel('Spia cheat', `<p class="note">Con l'opzione attiva, in Galassia compare il tasto <b>Spia cheat</b>: rapporto completo senza sonde. Oppure cerca un giocatore per nome.</p>
+      <p><button class="mini${G.cheat.spy ? ' on' : ''}" onclick="cheatDo('spy')">${G.cheat.spy ? 'Attiva ✔ (clicca per spegnere)' : 'Spenta (clicca per attivare)'}</button>
+      <input type="text" id="cq" placeholder="Nome utente" onkeydown="if(event.key==='Enter')cheatSearch()"> <button class="mini" onclick="cheatSearch()">Cerca</button></p>`) +
     panel('Velocità della flotta', `<p class="note">Divide il tempo di volo delle flotte che parti da ora. Attuale: <b>×${G.cheat.fleetMult}</b>.</p>
       <p>${mults.map(v => `<button class="mini${G.cheat.fleetMult === v ? ' on' : ''}" onclick="cheatDo('fleet',${v})">${v === 1 ? 'Normale' : '×' + v}</button>`).join(' ')}</p>`) +
     panel(`Spazi — ${pl.name}`, `<p>Campi occupati: <b>${usedFields(pl)}</b> · Campi totali: <b>${maxFields(pl)}</b></p>
@@ -418,6 +431,7 @@ function cheatDo(kind, a, b) {
   if (kind === 'res') cheatRes(pl, a, b);
   else if (kind === 'time') { cheatTime(pl, a, b); advance(T()); }
   else if (kind === 'fleet') G.cheat.fleetMult = a;
+  else if (kind === 'spy') G.cheat.spy = !G.cheat.spy;
   else if (kind === 'npc') {
     const err = cheatNpc(parseFloat($('#npts').value) || 1, parseInt($('#ng').value), parseInt($('#nsys').value), parseInt($('#npp').value), $('#nstyle').value, $('#nskill').value);
     if (err) return toast(err, true);

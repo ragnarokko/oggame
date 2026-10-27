@@ -22,13 +22,16 @@ function costOf(id, level) { const d = DEFS[id]; const m = Math.pow(d.f, level -
 const resTotal = c => c[0] + c[1];
 // Rete interplanetaria di ricerca: con livello N si sommano i N+1 laboratori più alti.
 const labLevel = () => G.planets.map(p => p.b.researchLab || 0).sort((a, b) => b - a).slice(0, (G.tech.intergalactic || 0) + 1).reduce((a, b) => a + b, 0);
-function buildTime(pl, id, level) { const c = costOf(id, level); return resTotal(c) / (2500 * (1 + (pl.b.robotics || 0)) * Math.pow(2, pl.b.nanite || 0)) / G.speed * HOUR; }
+// Cheat tempi: 50 = metà tempo, 100 = un solo turno (attivi finché non si disattivano).
+const timeCheat = (k, ms) => { const v = G.cheat && G.cheat[k]; return v === 100 ? Math.min(ms, turnMs()) : v === 50 ? ms / 2 : ms; };
+function buildTime(pl, id, level) { const c = costOf(id, level); return timeCheat('timeB', resTotal(c) / (2500 * (1 + (pl.b.robotics || 0)) * Math.pow(2, pl.b.nanite || 0)) / G.speed * HOUR); }
 // Ricerche che non costano risorse ma richiedono energia disponibile sul pianeta (es. gravitonica).
 const energyNeed = (id, level) => DEFS[id].energy ? DEFS[id].energy * Math.pow(DEFS[id].f, level - 1) : 0;
 const energyFree = pl => { const p = calcProd(pl); return Math.floor(p.energyProd - p.energyUse); };
 const canResearch = (pl, id, level) => canAfford(pl, costOf(id, level)) && energyFree(pl) >= energyNeed(id, level);
-function researchTime(id, level) { if (DEFS[id].instant) return 1000; const c = costOf(id, level); const rt = resTotal(c) || (DEFS[id].timeBase || 0) * Math.pow(DEFS[id].f, level - 1); return rt / (1000 * (1 + labLevel())) / G.speed * HOUR; }
-function unitTime(pl, id) { const c = DEFS[id].cost; return Math.max(1000, resTotal(c) / (5000 * (1 + (pl.b.shipyard || 0)) * Math.pow(2, pl.b.nanite || 0)) / G.speed * HOUR); }
+function researchTime(id, level) { return timeCheat('timeT', researchTime0(id, level)); }
+function researchTime0(id, level) { if (DEFS[id].instant) return 1000; const c = costOf(id, level); const rt = resTotal(c) || (DEFS[id].timeBase || 0) * Math.pow(DEFS[id].f, level - 1); return rt / (1000 * (1 + labLevel())) / G.speed * HOUR; }
+function unitTime(pl, id) { const c = DEFS[id].cost; return timeCheat('timeB', Math.max(1000, resTotal(c) / (5000 * (1 + (pl.b.shipyard || 0)) * Math.pow(2, pl.b.nanite || 0)) / G.speed * HOUR)); }
 const storageCap = l => 5000 * Math.floor(2.5 * Math.exp(20 * l / 33));
 const capacities = pl => [storageCap(pl.b.metalStorage || 0), storageCap(pl.b.crystalStorage || 0), storageCap(pl.b.deutTank || 0)];
 const satEnergy = pl => Math.max(1, Math.min(50, Math.floor((pl.maxTemp + 160) / 6)));
@@ -207,7 +210,7 @@ function occupant(g, s, p, moon) {
 
 const defaultOpts = () => ({ npcGrowth: 1, npcAggr: 2, hitPlayer: true, hitNpc: true, protect: true });
 function newGame(name, speed, turnLen, npcCount) {
-  G = { v: 2, name, speed, clock: 0, turn: 1, turnMs: (turnLen || 1) * HOUR, t: 0, tech: {}, planets: [], npcs: [], fleets: [], missiles: [], raids: [], news: [], cheat: { fleetMult: 1, spy: false }, opts: defaultOpts(), debris: {}, messages: [], researchQ: null, nextId: 1, nextFleet: 1, cur: 0, unread: 0 };
+  G = { v: 2, name, speed, clock: 0, turn: 1, turnMs: (turnLen || 1) * HOUR, t: 0, tech: {}, planets: [], npcs: [], fleets: [], missiles: [], raids: [], news: [], cheat: { fleetMult: 1, spy: false, timeB: 0, timeT: 0 }, opts: defaultOpts(), debris: {}, messages: [], researchQ: null, nextId: 1, nextFleet: 1, cur: 0, unread: 0 };
   const homeG = 1, homeS = rint(10, 20), homeP = rint(6, 9);
   const free = [];
   for (let g = 1; g <= GALAXIES; g++) for (let s = 1; s <= SYSTEMS; s++) for (let p = 1; p <= SLOTS; p++)
@@ -231,7 +234,7 @@ function addMsg(type, title, body, time) {
 function save() { try { localStorage.setItem(SAVE_KEY, JSON.stringify(G)); } catch (e) { } }
 function normalize(o) {
   o.missiles = o.missiles || []; o.raids = o.raids || []; o.news = o.news || [];
-  o.opts = Object.assign(defaultOpts(), o.opts || {}); o.cheat = Object.assign({ fleetMult: 1, spy: false }, o.cheat || {});
+  o.opts = Object.assign(defaultOpts(), o.opts || {}); o.cheat = Object.assign({ fleetMult: 1, spy: false, timeB: 0, timeT: 0 }, o.cheat || {});
   // Salvataggi a tempo reale: l'istante dell'ultimo aggiornamento diventa l'inizio del turno 1.
   if (o.clock == null) o.clock = o.t || 0;
   o.turn = o.turn || 1; o.turnMs = o.turnMs || HOUR;

@@ -447,9 +447,11 @@ function vCheat() {
   return panel('Cheat', '<span class="muted">Vantaggi rispetto agli altri giocatori. Agiscono sul pianeta o sulla luna selezionati.</span>') +
     panel(`Risorse — ${pl.name}`, `<table>${rows}</table>`) +
     panel(`Tempo di costruzione — ${pl.name}`, `<p class="note">Toglie tempo all'edificio in costruzione su questo pianeta e alla coda del cantiere e delle difese (turni).</p>
-      <p>${mins.map(v => `<button class="mini" onclick="cheatDo('time',${v},'b')">−${nf(v)} ${v === 1 ? 'turno' : 'turni'}</button>`).join(' ')}</p>`) +
+      <p>${mins.map(v => `<button class="mini" onclick="cheatDo('time',${v},'b')">−${nf(v)} ${v === 1 ? 'turno' : 'turni'}</button>`).join(' ')}</p>
+      <p><span class="muted">Automatico:</span> ${[[50, '−50% tempo'], [100, 'Tempo = 1 turno']].map(([v, n]) => `<button class="mini${G.cheat.timeB === v ? ' on' : ''}" onclick="cheatDo('timeauto','timeB',${v})">${n}</button>`).join(' ')}</p>`) +
     panel('Tempo di ricerca', `<p class="note">Toglie tempo alla ricerca in corso (turni).</p>
-      <p>${mins.map(v => `<button class="mini" onclick="cheatDo('time',${v},'t')">−${nf(v)} ${v === 1 ? 'turno' : 'turni'}</button>`).join(' ')}</p>`) +
+      <p>${mins.map(v => `<button class="mini" onclick="cheatDo('time',${v},'t')">−${nf(v)} ${v === 1 ? 'turno' : 'turni'}</button>`).join(' ')}</p>
+      <p><span class="muted">Automatico:</span> ${[[50, '−50% tempo'], [100, 'Tempo = 1 turno']].map(([v, n]) => `<button class="mini${G.cheat.timeT === v ? ' on' : ''}" onclick="cheatDo('timeauto','timeT',${v})">${n}</button>`).join(' ')}</p>`) +
     panel('Spia cheat', `<p class="note">Con l'opzione attiva, in Galassia compare il tasto <b>Spia cheat</b>: rapporto completo senza sonde. Oppure cerca un giocatore per nome.</p>
       <p><button class="mini${G.cheat.spy ? ' on' : ''}" onclick="cheatDo('spy')">${G.cheat.spy ? 'Attiva ✔ (clicca per spegnere)' : 'Spenta (clicca per attivare)'}</button>
       <input type="text" id="cq" placeholder="Nome utente" onkeydown="if(event.key==='Enter')cheatSearch()"> <button class="mini" onclick="cheatSearch()">Cerca</button></p>`) +
@@ -472,6 +474,12 @@ function cheatDo(kind, a, b) {
   const pl = cur();
   if (kind === 'res') cheatRes(pl, a, b);
   else if (kind === 'time') { cheatTime(pl, a, b); advance(T()); }
+  else if (kind === 'timeauto') {
+    G.cheat[a] = G.cheat[a] === b ? 0 : b;
+    const q = a === 'timeB' ? pl.buildQ : G.researchQ; // la coda in corso si adegua subito
+    if (q) { const full = a === 'timeB' ? buildTime(pl, q.id, q.level) : researchTime(q.id, q.level); q.end = Math.min(q.end, q.start + full); }
+    advance(T());
+  }
   else if (kind === 'fleet') G.cheat.fleetMult = a;
   else if (kind === 'spy') G.cheat.spy = !G.cheat.spy;
   else if (kind === 'npc') {

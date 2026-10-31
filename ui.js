@@ -592,7 +592,7 @@ function boot() {
   window.addEventListener('beforeunload', save);
 }
 function startNew() {
-  newGame($('#pname').value.trim() || 'Comandante', parseInt($('#pspeed').value), parseFloat($('#pturn').value) / 60, Math.max(0, Math.min(400, parseInt($('#pnpc').value) || 0)));
+  newGame($('#pname').value.trim() || 'Comandante', parseInt($('#pspeed').value), parseFloat($('#pturn').value) / 60, Math.max(0, Math.min(400, parseInt($('#pnpc').value) || 0)), $('#pstyle').value, $('#pskill').value, !!$('#pfresh').value);
   boot();
 }
 boot();

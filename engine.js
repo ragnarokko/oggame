@@ -140,7 +140,7 @@ function npcCands(npc, kind) {
   return c;
 }
 
-function makeNPC(g, s, p, style, skill) {
+function makeNPC(g, s, p, style, skill, fresh) {
   const rate0 = (120 + Math.random() * 500) * (1 + (g - 1) * 0.7) * (0.7 + (p / SLOTS) * 0.6);
   const npc = {
     name: randName() + ' ' + (['Prime', 'Nova', 'Station', 'Colony', 'Outpost'][rint(0, 4)]),
@@ -148,8 +148,8 @@ function makeNPC(g, s, p, style, skill) {
     rate0, rate: rate0, age: 0, res: [rate0 * 6, rate0 * 3, rate0 * 1.5], bank: [0, 0, 0], fleet: {}, def: {},
   };
   // Storia iniziale: una ventina di turni simulati con le regole normali, così stile e abilità si vedono subito.
-  const target = rnd(10, 160), steps = 20;
-  for (let i = 0; i < steps; i++) npcTurn(npc, target / steps, true);
+  const target = fresh ? 0 : rnd(10, 160), steps = 20;
+  if (target > 0) for (let i = 0; i < steps; i++) npcTurn(npc, target / steps, true);
   return npc;
 }
 const npcTech = n => { const l = Math.min(15, Math.floor(n.age / 30)); return { weapons: l, shield: l, armour: l, espionage: Math.floor(n.age / 40) + 1 }; };
@@ -209,14 +209,14 @@ function occupant(g, s, p, moon) {
 }
 
 const defaultOpts = () => ({ npcGrowth: 1, npcAggr: 2, hitPlayer: true, hitNpc: true, protect: true });
-function newGame(name, speed, turnLen, npcCount) {
+function newGame(name, speed, turnLen, npcCount, npcStyle, npcSkill, npcFresh) {
   G = { v: 2, name, speed, clock: 0, turn: 1, turnMs: (turnLen || 1) * HOUR, t: 0, tech: {}, planets: [], npcs: [], fleets: [], missiles: [], raids: [], news: [], cheat: { fleetMult: 1, spy: false, timeB: 0, timeT: 0 }, opts: defaultOpts(), debris: {}, messages: [], researchQ: null, nextId: 1, nextFleet: 1, cur: 0, unread: 0 };
   const homeG = 1, homeS = rint(10, 20), homeP = rint(6, 9);
   const free = [];
   for (let g = 1; g <= GALAXIES; g++) for (let s = 1; s <= SYSTEMS; s++) for (let p = 1; p <= SLOTS; p++)
     if (!(g === homeG && s === homeS && p === homeP)) free.push([g, s, p]);
   for (let i = free.length - 1; i > 0; i--) { const j = rint(0, i); [free[i], free[j]] = [free[j], free[i]]; }
-  for (const [g, s, p] of free.slice(0, Math.max(0, Math.min(free.length, npcCount == null ? 150 : npcCount)))) G.npcs.push(makeNPC(g, s, p));
+  for (const [g, s, p] of free.slice(0, Math.max(0, Math.min(free.length, npcCount == null ? 150 : npcCount)))) G.npcs.push(makeNPC(g, s, p, npcStyle, npcSkill, npcFresh));
   const home = newPlanet('Pianeta madre', homeG, homeS, homeP, 163, tempFor(homeP));
   G.planets.push(home); G.cur = home.id;
   addMsg('info', 'Benvenuto, comandante', `<p>Il tuo impero parte da <b>${home.name}</b> [${homeG}:${homeS}:${homeP}]. Costruisci miniere, ricerca nuove tecnologie, poi conquista i pianeti vicini.</p>`);

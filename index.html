@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Orbita — gioco di strategia spaziale</title>
-<link rel="stylesheet" href="style.css?v=16">
+<link rel="stylesheet" href="style.css?v=17">
 </head>
 <body>
 <div id="start" hidden>
@@ -20,7 +20,10 @@
       <label>Durata di un turno
         <select id="pturn"><option value="1">1 minuto di universo</option><option value="5" selected>5 minuti</option><option value="15">15 minuti</option><option value="30">30 minuti</option><option value="60">1 ora</option><option value="240">4 ore</option><option value="720">12 ore</option><option value="1440">24 ore</option></select>
       </label>
-      <label>Numero di avversari NPC (stile e abilità casuali) <input id="pnpc" type="number" min="0" max="400" value="150"></label>
+      <label>Numero di avversari NPC <input id="pnpc" type="number" min="0" max="400" value="150"></label>
+      <label>Abilità dei giocatori <select id="pskill"><option value="">Casuale</option><option value="low">Bassa</option><option value="mid">Media</option><option value="high">Alta</option></select></label>
+      <label>Partenza dei giocatori <select id="pfresh"><option value="">Casuale (hanno già una storia)</option><option value="1">Tutti da zero</option></select></label>
+      <label>Stile dei giocatori <select id="pstyle"><option value="">Misto (casuale)</option><option value="defensive">Difensivi</option><option value="aggressive">Aggressivi</option><option value="miner">Minatori</option><option value="balanced">Bilanciati</option></select></label>
       <button onclick="startNew()">Inizia</button>
     </div>
   </div>
@@ -31,10 +34,10 @@
 </div>
 <div id="toast"></div>
 <input type="file" id="loadfile" accept=".json,application/json" hidden onchange="loadFile(this)">
-<script src="data.js?v=16"></script>
-<script src="info.js?v=16"></script>
-<script src="icons.js?v=16"></script>
-<script src="engine.js?v=16"></script>
-<script src="ui.js?v=16"></script>
+<script src="data.js?v=17"></script>
+<script src="info.js?v=17"></script>
+<script src="icons.js?v=17"></script>
+<script src="engine.js?v=17"></script>
+<script src="ui.js?v=17"></script>
 </body>
 </html>

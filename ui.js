@@ -1,3 +1,4 @@
+let noSave = false;
 // Interfaccia: viste, azioni, ciclo di aggiornamento.
 const $ = s => document.querySelector(s);
 const cur = () => G.planets.find(p => p.id === G.cur) || G.planets[0];
@@ -414,7 +415,7 @@ function vOptions() {
   <button onclick="G.turnMs=+$('#trn').value*60000;done()">Applica</button>`) +
     panel('Salvataggio', `<p class="note">La partita si salva da sola nel browser. Con <b>Salva partita</b> scarichi un file JSON, che puoi ricaricare con <b>Carica</b>: la partita riprende dal momento del salvataggio.</p><button onclick="saveFile()">Salva partita</button> <button onclick="$('#loadfile').click()">Carica</button>`) +
     panel('Immagini personali', `<span class="muted">Per sostituire le icone con tue immagini, aggiungi un file <code>png</code> o <code>jpg</code> nella cartella giusta di <code>img/</code>: <code>edifici</code>, <code>ricerche</code>, <code>navi</code> o <code>difese</code> (dove ci sono già le icone attuali in <code>svg</code>), chiamandolo con l'id della voce (es. <code>img/edifici/metalMine.jpg</code>, <code>img/navi/smallCargo.png</code>).</span>`) +
-    panel('Nuova partita', `<button class="danger" onclick="if(confirm('Cancellare la partita?')){localStorage.removeItem(SAVE_KEY);location.reload()}">Ricomincia da zero</button>`);
+    panel('Nuova partita', `<button class="danger" onclick="if(confirm('Cancellare la partita?')){noSave=true;localStorage.removeItem(SAVE_KEY);location.reload()}">Ricomincia da zero</button>`);
 }
 function saveFile() {
   const blob = new Blob([saveFileText()], { type: 'application/json' }), a = document.createElement('a');
@@ -589,7 +590,7 @@ function boot() {
   $('#start').hidden = true; $('#app').hidden = false;
   GV = { g: cur().g, s: cur().s };
   advance(T()); render();
-  window.addEventListener('beforeunload', save);
+  window.addEventListener('beforeunload', () => { if (!noSave) save(); });
 }
 function startNew() {
   newGame($('#pname').value.trim() || 'Comandante', parseInt($('#pspeed').value), parseFloat($('#pturn').value) / 60, Math.max(0, Math.min(400, parseInt($('#pnpc').value) || 0)), $('#pstyle').value, $('#pskill').value, !!$('#pfresh').value);

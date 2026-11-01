@@ -88,6 +88,9 @@ details.msg.battle { border-left: 4px solid var(--bad); } details.msg.espionage 
 .navbtns button { padding: 6px 4px; font-size: 11px; }
 .navbtns .go { grid-row: 1 / 3; padding: 9px 4px; font-size: 13px; background: linear-gradient(#3aa24e, #26733a); }
 .navbtns .skip { background: linear-gradient(#4a6a92, #34506f); }
+.devbox { margin-top: 10px; padding-top: 8px; border-top: 1px solid var(--line2); width: 100%; }
+.devtitle { font-size: 11px; text-transform: uppercase; letter-spacing: 1px; opacity: .7; margin-bottom: 4px; }
+.devrow { display: flex; gap: 6px; align-items: center; padding: 3px 0; font-size: 12px; } .devrow > div { display: grid; min-width: 0; } .devrow small { opacity: .75; }
 #cheatbtn { align-self: center; padding: 6px 12px; }
 .cheatbtn { background: linear-gradient(#8a5cc0, #5a3a8a); border-color: #3f2766; } .cheatbtn.on { outline: 2px solid var(--acc); }
 #pausebar b { background: #7a4d00; color: #ffd27a; border: 1px solid var(--acc); border-radius: 4px; padding: 4px 10px; }

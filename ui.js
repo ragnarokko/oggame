@@ -565,9 +565,22 @@ function planetList() {
     h += `<div class="pitem moon${m.id === G.cur ? ' sel' : ''}" onclick="act.planet(${m.id})"><span class="mthumb"></span><div><b>${m.name}</b><small>Luna [${m.g}:${m.s}:${m.p}]</small></div></div>`;
   return h;
 }
+// Cose in sviluppo (tutti i pianeti) con i turni mancanti, per la barra laterale
+function devBox() {
+  const turns = end => Math.max(1, Math.ceil((end - T()) / G.turnMs - 1e-9));
+  const row = (id, txt, end, where) => `<div class="devrow">${icon(id, 'm')}<div><b>${txt}</b><small>${where ? where + ' · ' : ''}${turns(end)} turn${turns(end) === 1 ? 'o' : 'i'}</small></div></div>`;
+  let h = '';
+  if (G.researchQ) h += row(G.researchQ.id, `${DEFS[G.researchQ.id].name} ${G.researchQ.level}`, G.researchQ.end, 'Ricerca');
+  for (const pl of G.planets) {
+    if (pl.buildQ) h += row(pl.buildQ.id, `${DEFS[pl.buildQ.id].name} ${pl.buildQ.level}`, pl.buildQ.end, pl.name);
+    let at = pl.shipT;
+    for (const q of pl.shipQ) { at += q.n * unitTime(pl, q.id); h += row(q.id, `${nf(q.n)} × ${DEFS[q.id].name}`, at, pl.name); }
+  }
+  return h ? `<div class="devbox"><div class="devtitle">In sviluppo</div>${h}</div>` : '';
+}
 function render() {
-  $('#nav').innerHTML = Object.entries(VIEWS).filter(([k]) => k !== 'cheat' && k !== 'empirecheat').map(([k, [n]]) => `<a class="${k === view ? 'on' : ''}" onclick="go('${k}')">${n}${k === 'messages' && G.unread ? ` <span class="badge">${G.unread}</span>` : ''}</a>`).join('') +
-    `<div class="navbtns"><button class="go" onclick="nextTurn(1)">▶ Fine turno</button><button class="skip" onclick="nextTurn(5)" title="Passa 5 turni">×5</button><button class="skip" onclick="nextTurn(20)" title="Passa 20 turni">×20</button></div>`;
+  $('#nav').innerHTML =Object.entries(VIEWS).filter(([k]) => k !== 'cheat' && k !== 'empirecheat').map(([k, [n]]) => `<a class="${k === view ? 'on' : ''}" onclick="go('${k}')">${n}${k === 'messages' && G.unread ? ` <span class="badge">${G.unread}</span>` : ''}</a>`).join('') +
+    `<div class="navbtns"><button class="go" onclick="nextTurn(1)">▶ Fine turno</button><button class="skip" onclick="nextTurn(5)" title="Passa 5 turni">×5</button><button class="skip" onclick="nextTurn(20)" title="Passa 20 turni">×20</button></div>` + devBox();
   $('#cheatbtn').classList.toggle('on', view === 'cheat');
   $('#planets').innerHTML = planetList();
   $('#main').innerHTML = VIEWS[view][1]();
